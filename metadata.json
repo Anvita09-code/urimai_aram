@@ -1,0 +1,8 @@
+{
+  "name": "Remix Remix Remix 3 URIMAI ARAM — Citizen Welfare Discovery",
+  "description": "Pixel-perfect mobile landing page for Urimai Aram (உரிமையறம்), a Tamil-first bilingual citizen welfare-scheme discovery platform.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

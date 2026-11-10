@@ -1,0 +1,232 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Tamil:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    --font-tamil: 'Noto Sans Tamil', 'Latha', 'Tamil Sangam MN', 'InaiMathi', sans-serif;
+    --color-ivory: #FBF7EF;
+    --color-teal: #165446;
+    --color-turmeric: #F4C746;
+    --color-pale-yellow: #FFF4D2;
+    --color-charcoal: #1E2320;
+    --color-secondary-grey: #5C625F;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background-color: var(--color-ivory);
+    color: var(--color-charcoal);
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+.font-tamil {
+  font-family: 'Noto Sans Tamil', 'Latha', 'Tamil Sangam MN', 'InaiMathi', sans-serif !important;
+  letter-spacing: normal;
+  word-spacing: normal !important;
+  word-break: normal;
+  overflow-wrap: normal;
+  line-break: normal;
+  font-variant-ligatures: normal;
+  -webkit-font-feature-settings: "liga" 1, "calt" 1;
+  font-feature-settings: "liga" 1, "calt" 1;
+  text-rendering: optimizeLegibility;
+}
+
+/* Custom scrollbar for drawer/modals */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Accessible screen-reader only class */
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border-width: 0 !important;
+}
+
+/* =========================================================================
+   QUESTIONNAIRE PROGRESS TRACKER (5-Column Unified Grid)
+   ========================================================================= */
+.progress-steps {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.progress-step {
+  min-width: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.progress-step-label-container {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  text-align: center;
+  padding-inline: 2px;
+}
+
+.progress-step-label-text {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  text-align: center;
+  white-space: normal;
+  word-break: normal;
+  overflow-wrap: normal;
+  line-height: 1.32;
+  box-sizing: border-box;
+}
+
+/* =========================================================================
+   PART 2 — GENDER + AGE FIELD ALIGNMENT
+   ========================================================================= */
+.gender-age-row,
+.gender-age-grid {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.gender-field,
+.gender-column {
+  flex: 1 1 0%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.age-field,
+.age-column {
+  flex: 0 0 68px;
+  width: 68px;
+  min-width: 68px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+@media (min-width: 380px) {
+  .age-field,
+  .age-column {
+    flex: 0 0 74px;
+    width: 74px;
+    min-width: 74px;
+  }
+}
+
+.gender-options,
+.gender-options-grid {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.gender-option,
+.gender-option-item {
+  flex: 1 1 0%;
+  min-width: 0;
+  height: 46px;
+  min-height: 46px;
+  max-height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 0 4px;
+  box-sizing: border-box;
+  border-radius: 12px;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.15s ease-in-out;
+}
+
+.gender-option:nth-child(1),
+.gender-option-item:nth-child(1) {
+  flex: 0.9 1 0%;
+}
+
+.gender-option:nth-child(2),
+.gender-option-item:nth-child(2) {
+  flex: 0.95 1 0%;
+}
+
+.gender-option:nth-child(3),
+.gender-option-item:nth-child(3) {
+  flex: 1.15 1 0%;
+}
+
+.gender-radio-circle,
+.gender-radio-indicator {
+  flex: 0 0 14px;
+  width: 14px;
+  height: 14px;
+  min-width: 14px;
+  min-height: 14px;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.gender-option span.gender-label-text,
+.gender-option-label {
+  min-width: 0;
+  text-align: center;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.age-input-field,
+.age-input-control {
+  height: 46px;
+  min-height: 46px;
+  max-height: 46px;
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 12px;
+}
+
+.two-column-form-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 12px;
+  row-gap: 14px;
+  width: 100%;
+}
+
+@media (max-width: 340px) {
+  .two-column-form-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+

@@ -1,0 +1,210 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 320" width="100%" height="100%" fill="none">
+  <defs>
+    <!-- Warm Sunlit Halo Gradient -->
+    <radialGradient id="sunHalo" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+      <stop offset="0%" stop-color="#FCDD8A" stop-opacity="0.95" />
+      <stop offset="45%" stop-color="#FDE8A5" stop-opacity="0.80" />
+      <stop offset="75%" stop-color="#FEF2CF" stop-opacity="0.45" />
+      <stop offset="95%" stop-color="#FBF7EF" stop-opacity="0.05" />
+      <stop offset="100%" stop-color="#FBF7EF" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Warm Golden Linework Styles -->
+    <linearGradient id="goldStroke" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#D4941E" />
+      <stop offset="100%" stop-color="#B27810" />
+    </linearGradient>
+
+    <linearGradient id="shadingFill" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FEEFC4" stop-opacity="0.6" />
+      <stop offset="100%" stop-color="#F9DE96" stop-opacity="0.75" />
+    </linearGradient>
+  </defs>
+
+  <!-- 1. Sunlit Halo Disk -->
+  <circle cx="210" cy="155" r="145" fill="url(#sunHalo)" />
+
+  <!-- 2. Landscape Ground Base & Foliage Silhouettes -->
+  <path d="M70 295 Q140 286 210 290 Q280 294 350 288 Q370 290 380 296 L380 305 Q280 305 70 305 Z" fill="#E5BD68" opacity="0.35" />
+  <path d="M95 292 Q130 284 170 287 Q210 283 250 286 Q290 284 325 292 Q210 294 95 292 Z" fill="#CF9A32" opacity="0.45" />
+
+  <!-- 3. Left Palm Tree -->
+  <g id="left-palm" stroke="#C48616" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Trunk -->
+    <path d="M125 290 Q122 245 130 205" stroke-width="3" fill="none" />
+    <path d="M123 275 L127 274 M122 260 L126 259 M124 245 L128 244 M126 230 L130 229 M128 215 L131 214" stroke-width="1.5" />
+    <!-- Fronds -->
+    <path d="M130 205 Q105 190 90 205 Q110 200 130 205" fill="#E2AC3E" opacity="0.85" stroke-width="1" />
+    <path d="M130 205 Q110 175 95 180 Q112 188 130 205" fill="#D99B26" opacity="0.9" stroke-width="1" />
+    <path d="M130 205 Q125 168 120 162 Q128 180 130 205" fill="#E2AC3E" opacity="0.85" stroke-width="1" />
+    <path d="M130 205 Q145 170 152 174 Q142 188 130 205" fill="#D99B26" opacity="0.9" stroke-width="1" />
+    <path d="M130 205 Q155 190 165 202 Q148 198 130 205" fill="#E2AC3E" opacity="0.85" stroke-width="1" />
+    <path d="M130 205 Q145 215 155 228 Q140 216 130 205" fill="#C48616" opacity="0.8" stroke-width="1" />
+    <path d="M130 205 Q115 215 105 225 Q118 214 130 205" fill="#C48616" opacity="0.8" stroke-width="1" />
+  </g>
+
+  <!-- 4. Right Palm Tree -->
+  <g id="right-palm" stroke="#C48616" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Trunk -->
+    <path d="M295 290 Q300 240 290 190" stroke-width="3.5" fill="none" />
+    <path d="M294 275 L298 276 M296 258 L300 259 M297 240 L300 242 M295 222 L298 224 M292 205 L295 207" stroke-width="1.5" />
+    <!-- Fronds -->
+    <path d="M290 190 Q315 170 335 182 Q315 182 290 190" fill="#E2AC3E" opacity="0.85" stroke-width="1" />
+    <path d="M290 190 Q310 155 325 160 Q308 172 290 190" fill="#D99B26" opacity="0.9" stroke-width="1" />
+    <path d="M290 190 Q295 148 300 142 Q294 165 290 190" fill="#E2AC3E" opacity="0.85" stroke-width="1" />
+    <path d="M290 190 Q275 150 268 156 Q278 172 290 190" fill="#D99B26" opacity="0.9" stroke-width="1" />
+    <path d="M290 190 Q265 172 255 185 Q272 182 290 190" fill="#E2AC3E" opacity="0.85" stroke-width="1" />
+    <path d="M290 190 Q275 202 265 214 Q280 202 290 190" fill="#C48616" opacity="0.8" stroke-width="1" />
+    <path d="M290 190 Q305 202 318 212 Q302 202 290 190" fill="#C48616" opacity="0.8" stroke-width="1" />
+  </g>
+
+  <!-- 5. TEMPLE GOPURAM TOWER (COMPLETE ARCHITECTURAL ELEVATION) -->
+  <g id="gopuram" stroke="url(#goldStroke)" stroke-linecap="round" stroke-linejoin="round">
+
+    <!-- LEVEL 0: Plinth & Foundation (Upapitha / Adhisthana) -->
+    <rect x="135" y="278" width="150" height="12" rx="2" fill="#FEE9B5" stroke-width="1.6" />
+    <line x1="145" y1="284" x2="275" y2="284" stroke-width="0.8" stroke-dasharray="4 2" />
+
+    <!-- LEVEL 1: Main Gateway Base Storey (Prathama Tala & Dwarasala) -->
+    <path d="M142 278 L146 242 L274 242 L278 278 Z" fill="url(#shadingFill)" stroke-width="1.8" />
+    <!-- Cornice 1 (Kapota with decorative drops) -->
+    <rect x="138" y="240" width="144" height="4.5" rx="1" fill="#FCE19B" stroke-width="1.4" />
+    <!-- Pillars & Niches on Base -->
+    <line x1="156" y1="244" x2="154" y2="278" stroke-width="1.2" />
+    <line x1="172" y1="244" x2="170" y2="278" stroke-width="1.2" />
+    <line x1="248" y1="244" x2="250" y2="278" stroke-width="1.2" />
+    <line x1="264" y1="244" x2="266" y2="278" stroke-width="1.2" />
+    <!-- Central Entrance Gateway (Gopura Dwaram) -->
+    <path d="M192 278 L192 254 Q210 248 228 254 L228 278 Z" fill="#FAD175" stroke-width="1.6" />
+    <path d="M197 278 L197 258 Q210 253 223 258 L223 278 Z" fill="#B27810" opacity="0.3" stroke-width="0.8" />
+    <!-- Arch molding details -->
+    <path d="M188 255 Q210 244 232 255" stroke-width="1.2" fill="none" />
+
+    <!-- LEVEL 2: Second Tier (Dvitiya Tala) -->
+    <path d="M149 240 L153 210 L267 210 L271 240 Z" fill="url(#shadingFill)" stroke-width="1.6" />
+    <!-- Cornice 2 -->
+    <rect x="146" y="208" width="128" height="4" rx="1" fill="#FCE19B" stroke-width="1.3" />
+    <!-- Miniature Pavilions (Kutas, Salas, Panjaras) -->
+    <rect x="160" y="214" width="12" height="22" rx="1.5" fill="#FEEEC7" stroke-width="1" />
+    <rect x="180" y="214" width="16" height="22" rx="1.5" fill="#FEEEC7" stroke-width="1" />
+    <rect x="202" y="213" width="16" height="23" rx="1.5" fill="#FEEEC7" stroke-width="1" />
+    <rect x="224" y="214" width="16" height="22" rx="1.5" fill="#FEEEC7" stroke-width="1" />
+    <rect x="248" y="214" width="12" height="22" rx="1.5" fill="#FEEEC7" stroke-width="1" />
+    <!-- Kudu arches / horseshoe windows -->
+    <circle cx="166" cy="221" r="2.5" fill="#C48616" opacity="0.6" stroke-width="0.8" />
+    <circle cx="188" cy="221" r="2.8" fill="#C48616" opacity="0.6" stroke-width="0.8" />
+    <circle cx="210" cy="220" r="3" fill="#C48616" opacity="0.7" stroke-width="0.8" />
+    <circle cx="232" cy="221" r="2.8" fill="#C48616" opacity="0.6" stroke-width="0.8" />
+    <circle cx="254" cy="221" r="2.5" fill="#C48616" opacity="0.6" stroke-width="0.8" />
+
+    <!-- LEVEL 3: Third Tier (Tritiya Tala) -->
+    <path d="M156 208 L160 180 L260 180 L264 208 Z" fill="url(#shadingFill)" stroke-width="1.6" />
+    <!-- Cornice 3 -->
+    <rect x="154" y="178" width="112" height="3.5" rx="1" fill="#FCE19B" stroke-width="1.2" />
+    <!-- Windows & Sculptural Niches -->
+    <rect x="168" y="183" width="12" height="21" rx="1" fill="#FEEEC7" stroke-width="0.9" />
+    <rect x="188" y="183" width="14" height="21" rx="1" fill="#FEEEC7" stroke-width="0.9" />
+    <rect x="208" y="183" width="14" height="21" rx="1" fill="#FEEEC7" stroke-width="0.9" />
+    <rect x="228" y="183" width="14" height="21" rx="1" fill="#FEEEC7" stroke-width="0.9" />
+    <rect x="248" y="183" width="12" height="21" rx="1" fill="#FEEEC7" stroke-width="0.9" />
+    <path d="M188 190 Q195 185 202 190" stroke-width="0.8" fill="none" />
+    <path d="M208 190 Q215 185 222 190" stroke-width="0.8" fill="none" />
+    <path d="M228 190 Q235 185 242 190" stroke-width="0.8" fill="none" />
+
+    <!-- LEVEL 4: Fourth Tier (Chaturtha Tala) -->
+    <path d="M163 178 L167 152 L253 152 L257 178 Z" fill="url(#shadingFill)" stroke-width="1.5" />
+    <!-- Cornice 4 -->
+    <rect x="162" y="150" width="96" height="3.5" rx="1" fill="#FCE19B" stroke-width="1.2" />
+    <rect x="175" y="155" width="12" height="19" rx="1" fill="#FEEEC7" stroke-width="0.9" />
+    <rect x="194" y="155" width="14" height="19" rx="1" fill="#FEEEC7" stroke-width="0.9" />
+    <rect x="212" y="155" width="14" height="19" rx="1" fill="#FEEEC7" stroke-width="0.9" />
+    <rect x="233" y="155" width="12" height="19" rx="1" fill="#FEEEC7" stroke-width="0.9" />
+    <circle cx="201" cy="162" r="2.2" fill="#C48616" opacity="0.6" stroke-width="0.7" />
+    <circle cx="219" cy="162" r="2.2" fill="#C48616" opacity="0.6" stroke-width="0.7" />
+
+    <!-- LEVEL 5: Fifth Tier (Panchama Tala) -->
+    <path d="M170 150 L174 126 L246 126 L250 150 Z" fill="url(#shadingFill)" stroke-width="1.4" />
+    <!-- Cornice 5 -->
+    <rect x="169" y="124" width="82" height="3" rx="1" fill="#FCE19B" stroke-width="1.1" />
+    <rect x="182" y="129" width="12" height="17" rx="1" fill="#FEEEC7" stroke-width="0.8" />
+    <rect x="200" y="129" width="20" height="17" rx="1" fill="#FEEEC7" stroke-width="0.8" />
+    <rect x="226" y="129" width="12" height="17" rx="1" fill="#FEEEC7" stroke-width="0.8" />
+    <circle cx="210" cy="136" r="2.5" fill="#C48616" opacity="0.7" stroke-width="0.7" />
+
+    <!-- LEVEL 6: Sixth Tier (Sastha Tala) -->
+    <path d="M176 124 L180 102 L240 102 L244 124 Z" fill="url(#shadingFill)" stroke-width="1.3" />
+    <!-- Cornice 6 -->
+    <rect x="176" y="100" width="68" height="3" rx="1" fill="#FCE19B" stroke-width="1" />
+    <rect x="188" y="104" width="11" height="17" rx="1" fill="#FEEEC7" stroke-width="0.8" />
+    <rect x="204" y="104" width="12" height="17" rx="1" fill="#FEEEC7" stroke-width="0.8" />
+    <rect x="221" y="104" width="11" height="17" rx="1" fill="#FEEEC7" stroke-width="0.8" />
+
+    <!-- LEVEL 7: Upper Neck & Griva Base -->
+    <path d="M182 100 L185 82 L235 82 L238 100 Z" fill="url(#shadingFill)" stroke-width="1.2" />
+    <!-- Griva Molding -->
+    <rect x="183" y="80" width="54" height="3" rx="1" fill="#FCE19B" stroke-width="1" />
+
+    <!-- TOP SECTION: Barrel-Vaulted Wagon Roof (Sala Shikhara) -->
+    <!-- The distinctive curved barrel roof with makara / kudu ends -->
+    <path d="M182 80 C182 66 195 56 210 56 C225 56 238 66 238 80 Z" fill="#FCDA82" stroke-width="1.6" />
+    <!-- Ridge crest line on top of shikhara -->
+    <line x1="186" y1="58" x2="234" y2="58" stroke-width="1.4" />
+    <!-- Ornamental kudu arch ribbing on vault face -->
+    <path d="M192 78 C192 68 200 60 210 60 C220 60 228 68 228 78 Z" fill="#FEEEC7" stroke-width="1" />
+    <circle cx="210" cy="70" r="3.5" fill="#C48616" stroke-width="0.8" />
+    <!-- End ornamental scrolls (Simhamukha / Makara scrolls) -->
+    <path d="M182 78 Q176 74 179 66 Q184 68 184 74 Z" fill="#D99B26" stroke-width="1" />
+    <path d="M238 78 Q244 74 241 66 Q236 68 236 74 Z" fill="#D99B26" stroke-width="1" />
+
+    <!-- 7 KALASAMS (GOLDEN FINIALS / STUPIS) - FULLY VISIBLE & INTACT AT THE VERY CREST -->
+    <!-- Kalasam 1 (Leftmost) -->
+    <g transform="translate(187, 44)">
+      <ellipse cx="0" cy="12" rx="1.8" ry="1.2" fill="#FEE9B5" stroke-width="0.7" />
+      <path d="M-1.8 12 Q-2.5 8 0 4 Q2.5 8 1.8 12 Z" fill="#E2AC3E" stroke-width="0.7" />
+      <line x1="0" y1="4" x2="0" y2="0" stroke-width="0.8" />
+      <circle cx="0" cy="0" r="0.7" fill="#C48616" />
+    </g>
+    <!-- Kalasam 2 -->
+    <g transform="translate(194.5, 43)">
+      <ellipse cx="0" cy="13" rx="2" ry="1.3" fill="#FEE9B5" stroke-width="0.7" />
+      <path d="M-2 13 Q-2.8 8.5 0 4 Q2.8 8.5 2 13 Z" fill="#E2AC3E" stroke-width="0.7" />
+      <line x1="0" y1="4" x2="0" y2="0" stroke-width="0.8" />
+      <circle cx="0" cy="0" r="0.8" fill="#C48616" />
+    </g>
+    <!-- Kalasam 3 -->
+    <g transform="translate(202, 42)">
+      <ellipse cx="0" cy="14" rx="2.2" ry="1.4" fill="#FEE9B5" stroke-width="0.8" />
+      <path d="M-2.2 14 Q-3 9 0 4.5 Q3 9 2.2 14 Z" fill="#E2AC3E" stroke-width="0.8" />
+      <line x1="0" y1="4.5" x2="0" y2="0" stroke-width="0.9" />
+      <circle cx="0" cy="0" r="0.8" fill="#C48616" />
+    </g>
+    <!-- Kalasam 4 (Center - Tallest) -->
+    <g transform="translate(210, 40)">
+      <ellipse cx="0" cy="16" rx="2.5" ry="1.5" fill="#FEE9B5" stroke-width="0.9" />
+      <path d="M-2.5 16 Q-3.5 10 0 5 Q3.5 10 2.5 16 Z" fill="#E2AC3E" stroke-width="0.9" />
+      <line x1="0" y1="5" x2="0" y2="0" stroke-width="1" />
+      <circle cx="0" cy="0" r="1" fill="#C48616" />
+    </g>
+    <!-- Kalasam 5 -->
+    <g transform="translate(218, 42)">
+      <ellipse cx="0" cy="14" rx="2.2" ry="1.4" fill="#FEE9B5" stroke-width="0.8" />
+      <path d="M-2.2 14 Q-3 9 0 4.5 Q3 9 2.2 14 Z" fill="#E2AC3E" stroke-width="0.8" />
+      <line x1="0" y1="4.5" x2="0" y2="0" stroke-width="0.9" />
+      <circle cx="0" cy="0" r="0.8" fill="#C48616" />
+    </g>
+    <!-- Kalasam 6 -->
+    <g transform="translate(225.5, 43)">
+      <ellipse cx="0" cy="13" rx="2" ry="1.3" fill="#FEE9B5" stroke-width="0.7" />
+      <path d="M-2 13 Q-2.8 8.5 0 4 Q2.8 8.5 2 13 Z" fill="#E2AC3E" stroke-width="0.7" />
+      <line x1="0" y1="4" x2="0" y2="0" stroke-width="0.8" />
+      <circle cx="0" cy="0" r="0.8" fill="#C48616" />
+    </g>
+    <!-- Kalasam 7 (Rightmost) -->
+    <g transform="translate(233, 44)">
+      <ellipse cx="0" cy="12" rx="1.8" ry="1.2" fill="#FEE9B5" stroke-width="0.7" />
+      <path d="M-1.8 12 Q-2.5 8 0 4 Q2.5 8 1.8 12 Z" fill="#E2AC3E" stroke-width="0.7" />
+      <line x1="0" y1="4" x2="0" y2="0" stroke-width="0.8" />
+      <circle cx="0" cy="0" r="0.7" fill="#C48616" />
+    </g>
+  </g>
+</svg>
