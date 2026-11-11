@@ -1,9 +1,23 @@
 import React, { useState } from 'react';
-import { ArrowLeft, ChevronRight, Edit3, Plus, UserPlus } from 'lucide-react';
+import {
+  AlertCircle,
+  AlertTriangle,
+  ArrowLeft,
+  CheckCircle2,
+  ChevronRight,
+  ClipboardList,
+  Edit3,
+  FileText,
+  Plus,
+  Search,
+  Sparkles,
+  Trash2,
+  UserPlus,
+  Users,
+} from 'lucide-react';
 import { translations } from '../../data/translations';
+import { householdService } from '../../services/householdService';
 import { HouseholdMember, HouseholdProfile, Language } from '../../types';
-import { DashboardHeader } from '../Dashboard/DashboardHeader';
-import { NotificationDrawer } from '../Dashboard/modals/NotificationDrawer';
 import { AddMemberModal } from './AddMemberModal';
 import { EditMemberModal } from './EditMemberModal';
 import { MemberAvatar } from './MemberAvatar';
@@ -18,7 +32,8 @@ interface HouseholdManagementPageProps {
   onNavigateBack: () => void;
   onOpenLanguage: () => void;
   onNavigateHome: () => void;
-  onNavigateToProfile?: () => void;
+  onNavigateToMemberQuestionnaire: (memberId: string) => void;
+  onNavigateToCheck: () => void;
 }
 
 export const HouseholdManagementPage: React.FC<HouseholdManagementPageProps> = ({
@@ -30,357 +45,316 @@ export const HouseholdManagementPage: React.FC<HouseholdManagementPageProps> = (
   onNavigateBack,
   onOpenLanguage,
   onNavigateHome,
-  onNavigateToProfile,
+  onNavigateToMemberQuestionnaire,
+  onNavigateToCheck,
 }) => {
   const t = translations[currentLang];
   const isTamil = currentLang === 'ta';
 
-  // Modal display states
+  // Modal states
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingMember, setEditingMember] = useState<HouseholdMember | null>(null);
   const [isHouseholdModalOpen, setIsHouseholdModalOpen] = useState(false);
-  const [isNotificationDrawerOpen, setIsNotificationDrawerOpen] = useState(false);
+  const [deletingMemberId, setDeletingMemberId] = useState<string | null>(null);
 
-  // Handle member actions
+  const completeness = householdService.calculateCompleteness();
+  const householdState = householdService.getState();
+
   const handleSaveEditedMember = (updated: HouseholdMember) => {
-    const next = householdMembers.map((m) => (m.id === updated.id ? updated : m));
-    onUpdateMembers(next);
+    householdService.updateMember(updated.id, updated);
+    onUpdateMembers(householdService.getMembers());
+    setEditingMember(null);
   };
 
-  const handleDeleteMember = (memberId: string) => {
-    const next = householdMembers.filter((m) => m.id !== memberId);
-    onUpdateMembers(next);
+  const handleConfirmDeleteMember = () => {
+    if (!deletingMemberId) return;
+    householdService.removeMember(deletingMemberId);
+    onUpdateMembers(householdService.getMembers());
+    setDeletingMemberId(null);
   };
 
   const handleAddNewMember = (newMember: HouseholdMember) => {
-    const next = [...householdMembers, newMember];
-    onUpdateMembers(next);
+    householdService.addMember(newMember);
+    onUpdateMembers(householdService.getMembers());
+    setIsAddModalOpen(false);
   };
 
+  const memberToDelete = householdMembers.find((m) => m.id === deletingMemberId);
+
   return (
-    <div className="relative w-full mx-auto min-h-screen bg-[#FAF7EF] text-[#202820] flex flex-col justify-between overflow-x-hidden pt-1 pb-6 antialiased select-none">
-      {/* Main Content Area */}
-      <main className="w-full flex-1 flex flex-col justify-start px-4 sm:px-5 pb-4">
-        {/* =========================================================================
-            2. BRAND HEADER with Logo, Language Selector & Notification Bell
-           ========================================================================= */}
-        <div className="-mx-4 sm:-mx-5">
-          <DashboardHeader
-            currentLang={currentLang}
-            unreadCount={2}
-            onOpenLanguage={onOpenLanguage}
-            onOpenNotifications={() => setIsNotificationDrawerOpen(true)}
-            onNavigateHome={onNavigateHome}
+    <div className="w-full max-w-[460px] mx-auto px-4 py-3 pb-8 text-left select-none">
+      {/* Top Header Bar */}
+      <section className="flex items-center justify-between mb-3">
+        <button
+          type="button"
+          onClick={onNavigateBack}
+          className="p-1 -ml-1 text-[#155B4D] hover:bg-[#E5F1E7] rounded-full transition-all cursor-pointer"
+          aria-label={t.back}
+        >
+          <ArrowLeft className="w-6 h-6 stroke-[2.4]" />
+        </button>
+
+        <button
+          type="button"
+          onClick={onNavigateToCheck}
+          className="flex items-center gap-1.5 px-3.5 py-1.5 bg-[#155B4D] text-white font-bold text-[12px] rounded-full shadow-xs hover:bg-[#10483D] active:scale-95 transition-all cursor-pointer"
+        >
+          <Search className="w-3.5 h-3.5" />
+          <span>{isTamil ? 'தகுதி ஆய்வு' : 'Check Eligibility'}</span>
+        </button>
+      </section>
+
+      {/* Heading */}
+      <section className="mb-4">
+        <h1
+          className={`text-[#155B4D] font-bold text-[22px] sm:text-[24px] leading-tight tracking-tight ${
+            isTamil ? 'font-tamil' : ''
+          }`}
+        >
+          {t.manageHouseholdTitle}
+        </h1>
+        <p className={`text-[#626A62] text-[13px] leading-snug mt-1 ${isTamil ? 'font-tamil' : ''}`}>
+          {t.manageHouseholdDesc}
+        </p>
+      </section>
+
+      {/* Real Completeness Gauge Card */}
+      <section className="bg-white rounded-[20px] border border-[#E0E6E0] p-4 shadow-2xs mb-4">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-[12.5px] font-bold text-[#155B4D]">
+            {isTamil ? 'தகவல் முழுமை நிலை' : 'Profile Completeness'}
+          </span>
+          <span className="text-[14px] font-extrabold text-[#155B4D]">{completeness.percentage}%</span>
+        </div>
+
+        <div className="w-full bg-[#E0E6E0] h-2 rounded-full overflow-hidden mb-2">
+          <div
+            className="bg-[#155B4D] h-full rounded-full transition-all duration-300"
+            style={{ width: `${completeness.percentage}%` }}
           />
         </div>
 
-        {/* =========================================================================
-            3. BACK NAVIGATION & PAGE HEADING AREA
-           ========================================================================= */}
-        <section className="pt-3 pb-4">
-          <div className="flex items-center gap-2.5">
-            {/* Back Button Arrow */}
-            <button
-              type="button"
-              onClick={onNavigateBack}
-              className="p-1 -ml-1 text-[#155B4D] hover:text-[#11493e] active:scale-90 transition-all cursor-pointer rounded-full"
-              aria-label="Back to Dashboard"
-            >
-              <ArrowLeft className="w-6 h-6 stroke-[2.6]" />
-            </button>
+        <p className="text-[11.5px] text-[#69756F]">
+          {completeness.completedCheckpoints} of {completeness.totalCheckpoints} checkpoints verified.
+        </p>
+      </section>
 
-            {/* Main Page Heading */}
-            <h1
-              className={`text-[#155B4D] font-bold text-[22px] sm:text-[24px] leading-tight tracking-tight ${
-                isTamil ? 'font-tamil' : ''
-              }`}
-            >
-              {t.manageHouseholdTitle}
-            </h1>
-          </div>
-
-          {/* Supporting Description */}
-          <p
-            className={`text-[#626A62] text-[13px] sm:text-[13.5px] leading-[1.45] mt-2 max-w-[360px] ${
-              isTamil ? 'font-tamil' : ''
-            }`}
-          >
-            {t.manageHouseholdDesc}
-          </p>
-        </section>
-
-        {/* =========================================================================
-            4. SECTION D — HOUSEHOLD SUMMARY CARD (PROFESSIONAL 2-TIER STACKED LAYOUT)
-            - Top Tier: [ Household Icon (52px) ] [ Heading ("My Household" / "என் குடும்பம்") + Member Count ]
-            - Bottom Tier: [ ✏️ Update Household Details Button (Placed beneath with full width & professional spacing) ]
-            - Zero collision, balanced breathing room, clean alignment on all viewports
-           ========================================================================= */}
-        <section className="w-full mb-5">
-          <div className="w-full bg-[#EFF5EC] rounded-[24px] sm:rounded-[28px] p-4 sm:p-5 border border-[#DFEBE1] shadow-[0_2px_10px_rgba(21,91,77,0.04)] flex flex-col gap-3.5 sm:gap-4 box-border">
-            {/* Top Tier: Household Icon + Information */}
-            <div className="w-full flex items-center gap-3.5 sm:gap-4">
-              {/* Left: Household Icon Container */}
-              <div className="w-[52px] h-[52px] sm:w-[58px] sm:h-[58px] rounded-2xl bg-[#E5F1E7] border border-[#D5E6D8] flex items-center justify-center shrink-0 shadow-2xs">
-                <svg
-                  className="w-6.5 h-6.5 sm:w-7 sm:h-7 text-[#155B4D]"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                  <circle cx="9" cy="7" r="4" />
-                  <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                </svg>
+      {/* Household Level Information Card */}
+      <section className="w-full mb-4">
+        <div className="w-full bg-[#EFF5EC] rounded-[22px] p-4 border border-[#DFEBE1] shadow-2xs flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl bg-[#E5F1E7] border border-[#D5E6D8] flex items-center justify-center shrink-0">
+                <Users className="w-5 h-5 text-[#155B4D]" />
               </div>
-
-              {/* Centre: Household Heading & Member Count */}
-              <div className="min-w-0 flex-1 flex flex-col justify-center text-left">
-                <h2
-                  className={`text-[#155B4D] font-bold text-[18px] sm:text-[20px] leading-tight tracking-tight ${
-                    isTamil ? 'font-tamil' : ''
-                  }`}
-                >
-                  {t.myHousehold}
+              <div>
+                <h2 className="text-[#155B4D] font-bold text-[16px] leading-tight">
+                  {isTamil ? householdProfile.headNameTa || householdProfile.headName : householdProfile.headName}
                 </h2>
-                <div className="flex items-baseline gap-1.5 mt-1 text-[#626A62] text-[13.5px] sm:text-[14.5px] font-normal leading-tight">
-                  <span className="text-[#155B4D] font-bold text-[15px] sm:text-[16px]">
-                    {householdMembers.length}
-                  </span>
-                  <span className={isTamil ? 'font-tamil' : ''}>
-                    {isTamil ? 'உறுப்பினர்கள்' : 'Members'}
-                  </span>
-                </div>
+                <p className="text-[12px] text-[#55645E] mt-0.5">
+                  Ration: {householdProfile.rationCardNumber} • ₹{householdProfile.annualIncome.toLocaleString('en-IN')}/yr
+                </p>
               </div>
             </div>
 
-            {/* Bottom Tier: Update Household Details Action Button Beneath */}
             <button
               type="button"
               onClick={() => setIsHouseholdModalOpen(true)}
-              className="w-full px-4 py-2.5 sm:py-3 bg-white hover:bg-[#FAF7EF] active:scale-[0.99] border-[1.5px] border-[#155B4D] rounded-full text-[#155B4D] flex items-center justify-between gap-2 transition-all cursor-pointer shadow-2xs box-border"
-              aria-label={t.updateHouseholdDetails}
+              className="p-1.5 bg-white text-[#155B4D] hover:bg-[#FAF7EF] border border-[#D0DED4] rounded-full cursor-pointer shadow-2xs"
+              title="Edit Household Details"
             >
-              {/* Left: Pencil icon + Full label */}
-              <div className="flex items-center gap-2 min-w-0">
-                <Edit3 className="w-4 h-4 text-[#155B4D] stroke-[2.2] shrink-0" />
-                <span
-                  className={`font-bold text-[#155B4D] text-[13px] sm:text-[14px] leading-tight ${
-                    isTamil ? 'font-tamil' : ''
-                  }`}
-                >
-                  {t.updateHouseholdDetails}
-                </span>
-              </div>
-
-              {/* Right: Chevron */}
-              <ChevronRight className="w-4 h-4 text-[#155B4D] stroke-[2.5] shrink-0" />
+              <Edit3 className="w-4 h-4" />
             </button>
           </div>
-        </section>
 
-        {/* =========================================================================
-            5. SECTION E — HOUSEHOLD MEMBERS SECTION HEADING
-           ========================================================================= */}
-        <section className="w-full mb-3">
-          <h2
-            className={`text-[#155B4D] font-bold text-[18px] sm:text-[19px] leading-tight text-left ${
-              isTamil ? 'font-tamil' : ''
-            }`}
-          >
-            {t.householdMembersSection}
+          <div className="pt-2 border-t border-[#DFEBE1] grid grid-cols-2 gap-2 text-[11.5px] text-[#55645E]">
+            <div>Location: {householdProfile.district}, {householdProfile.taluk}</div>
+            <div>Housing: {householdProfile.housingType} ({householdProfile.areaType})</div>
+          </div>
+        </div>
+      </section>
+
+      {/* Household Members List */}
+      <section className="space-y-3 mb-5">
+        <div className="flex items-center justify-between">
+          <h2 className="text-[#155B4D] font-bold text-[17px]">
+            {t.householdMembersSection} ({householdMembers.length})
           </h2>
-        </section>
+          <button
+            type="button"
+            onClick={() => setIsAddModalOpen(true)}
+            className="flex items-center gap-1 text-[12px] font-bold text-[#155B4D] hover:underline cursor-pointer"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>{t.addNewMember}</span>
+          </button>
+        </div>
 
-        {/* =========================================================================
-            6. SECTION F — HOUSEHOLD MEMBER CARDS LIST (4 Individual Cards)
-           ========================================================================= */}
-        <section className="w-full space-y-2.5 sm:space-y-3 mb-3">
-          {householdMembers.map((member) => {
-            const displayName = isTamil ? member.nameTa || member.name : member.name;
-            const displayRelation = isTamil
-              ? member.relationTa || member.relation
-              : member.relation;
-            const displayGender = isTamil
-              ? member.genderTa || (member.gender === 'Female' ? 'பெண்' : 'ஆண்')
-              : member.gender || 'Male';
+        {householdMembers.map((member) => {
+          const q = householdState.memberProfiles[member.id];
+          const hasCompletedQ = q && q.fullName && q.occupationType;
 
-            return (
-              <article
-                key={member.id}
-                onClick={() => setEditingMember(member)}
-                className="w-full bg-white hover:bg-[#FFFDF9] active:scale-[0.99] rounded-[22px] p-3 sm:p-3.5 border border-[#ECE5D8] shadow-2xs flex items-center justify-between gap-3 transition-all cursor-pointer group"
-              >
-                {/* 1. Left: Circular Illustrated Avatar */}
-                <MemberAvatar
-                  avatarType={member.avatarType}
-                  gender={member.gender}
-                  age={member.age}
-                  name={displayName}
-                  className="w-13 h-13 sm:w-14 sm:h-14 border border-[#ECE2D2] shadow-2xs group-hover:scale-102 transition-transform"
-                />
-
-                {/* 2. Centre: Name, Relationship Badge & Personal Details */}
-                <div className="min-w-0 flex-1 flex flex-col justify-center">
-                  {/* Top Row: Name and Relationship Badge */}
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <span
-                      className={`text-[#202820] font-bold text-[15px] sm:text-[16px] leading-tight truncate ${
-                        isTamil ? 'font-tamil' : ''
-                      }`}
-                    >
-                      {displayName}
-                    </span>
-
-                    {/* Relationship Badge */}
-                    <span
-                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] sm:text-[11.5px] font-semibold bg-[#FEEBB6] text-[#8A6214] whitespace-nowrap shadow-2xs ${
-                        isTamil ? 'font-tamil' : ''
-                      }`}
-                    >
-                      {displayRelation}
-                    </span>
-                  </div>
-
-                  {/* Bottom Row: Age and Gender Details */}
-                  <div
-                    className={`text-[#626A62] text-[12.5px] sm:text-[13px] font-normal leading-tight mt-1 ${
-                      isTamil ? 'font-tamil' : ''
-                    }`}
-                  >
-                    {isTamil ? (
-                      <span>
-                        வயது: {member.age} &nbsp;|&nbsp; {displayGender}
+          return (
+            <article
+              key={member.id}
+              className="w-full bg-white rounded-[20px] p-3.5 border border-[#ECE5D8] shadow-2xs space-y-2.5 transition-all text-left"
+            >
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <MemberAvatar
+                    avatarType={member.avatarType}
+                    gender={member.gender}
+                    age={member.age}
+                    name={member.name}
+                    className="w-12 h-12 border border-[#ECE2D2] shrink-0"
+                  />
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-[#202820] font-bold text-[15px] truncate">
+                        {isTamil ? member.nameTa || member.name : member.name}
                       </span>
-                    ) : (
-                      <span>
-                        Age: {member.age} &nbsp;|&nbsp; {displayGender}
+                      <span className="text-[10px] font-semibold bg-[#FEEBB6] text-[#8A6214] px-2 py-0.5 rounded-full">
+                        {isTamil ? member.relationTa || member.relation : member.relation}
                       </span>
-                    )}
+                    </div>
+                    <p className="text-[12px] text-[#626A62] mt-0.5">
+                      {isTamil ? `வயது: ${member.age} • ${member.genderTa || member.gender}` : `Age: ${member.age} • ${member.gender}`}
+                    </p>
                   </div>
                 </div>
 
-                {/* 3. Right: Circular Edit Icon Button & Chevron */}
-                <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
-                  {/* Edit Button */}
+                {/* Edit & Remove Controls */}
+                <div className="flex items-center gap-1 shrink-0">
                   <button
                     type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setEditingMember(member);
-                    }}
-                    className="w-8.5 h-8.5 sm:w-9 sm:h-9 rounded-full bg-[#E5F1E7] border border-[#D5E6D8] flex items-center justify-center text-[#155B4D] hover:bg-[#d5ebd9] active:scale-90 transition-all cursor-pointer shadow-2xs"
-                    aria-label={`Edit ${displayName}`}
+                    onClick={() => setEditingMember(member)}
+                    className="p-1.5 text-[#155B4D] hover:bg-[#E5F1E7] rounded-full cursor-pointer"
+                    title="Edit Member Basic Info"
                   >
-                    <Edit3 className="w-4 h-4 stroke-[2]" />
+                    <Edit3 className="w-4 h-4" />
                   </button>
-
-                  {/* Chevron Right */}
-                  <ChevronRight className="w-5 h-5 text-[#155B4D] stroke-[2.4] group-hover:translate-x-0.5 transition-transform" />
+                  {householdMembers.length > 1 && member.relation !== 'Head of Household' && (
+                    <button
+                      type="button"
+                      onClick={() => setDeletingMemberId(member.id)}
+                      className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-full cursor-pointer"
+                      title="Remove Member"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
-              </article>
-            );
-          })}
+              </div>
 
-          {/* =========================================================================
-              7. SECTION H — ADD NEW MEMBER CARD (Dashed-Outline Card)
-             ========================================================================= */}
-          <button
-            type="button"
-            onClick={() => setIsAddModalOpen(true)}
-            className="w-full bg-white/70 hover:bg-white active:scale-[0.99] rounded-[20px] p-3 sm:p-3.5 border-2 border-dashed border-[#CFDDC7] flex items-center justify-between gap-3 transition-all cursor-pointer group"
-          >
-            {/* Left: Pale Green Plus Icon Container */}
-            <div className="w-10 h-10 rounded-full bg-[#E5F1E7] flex items-center justify-center text-[#155B4D] group-hover:scale-105 transition-transform shrink-0">
-              <Plus className="w-5 h-5 stroke-[2.4]" />
-            </div>
+              {/* Direct Access to Member Questionnaire */}
+              <div className="pt-2 border-t border-[#F2ECE0] flex items-center justify-between">
+                <span
+                  className={`text-[10.5px] font-semibold px-2 py-0.5 rounded-full ${
+                    hasCompletedQ
+                      ? 'bg-[#E8F3EB] text-[#155B4D]'
+                      : 'bg-[#FFF8E6] text-[#A66F00]'
+                  }`}
+                >
+                  {hasCompletedQ
+                    ? (isTamil ? '✓ கேள்வித்தாள் பூர்த்தி செய்யப்பட்டது' : '✓ Questionnaire Complete')
+                    : (isTamil ? '⚠ கேள்வித்தாள் நிலுவை' : '⚠ Questionnaire Incomplete')}
+                </span>
 
-            {/* Centre: Add New Member Label */}
-            <span
-              className={`text-[14.5px] sm:text-[15.5px] font-bold text-[#155B4D] flex-1 text-left ${
-                isTamil ? 'font-tamil' : ''
-              }`}
-            >
-              {t.addNewMember}
-            </span>
+                <button
+                  type="button"
+                  onClick={() => onNavigateToMemberQuestionnaire(member.id)}
+                  className="flex items-center gap-1 text-[12px] font-bold text-[#155B4D] hover:underline cursor-pointer"
+                >
+                  <span>{hasCompletedQ ? (isTamil ? 'திருத்து' : 'Update Answers') : (isTamil ? 'பூர்த்தி செய்க' : 'Fill Answers')}</span>
+                  <ChevronRight className="w-3.5 h-3.5 stroke-[2.4]" />
+                </button>
+              </div>
+            </article>
+          );
+        })}
+      </section>
 
-            {/* Right: Chevron */}
-            <ChevronRight className="w-5 h-5 text-[#155B4D] stroke-[2.4] group-hover:translate-x-0.5 transition-transform shrink-0" />
-          </button>
-        </section>
+      {/* Primary Proceed Action */}
+      <button
+        type="button"
+        onClick={onNavigateToCheck}
+        className="w-full py-3.5 bg-[#155B4D] hover:bg-[#10483D] active:scale-[0.99] text-white font-bold rounded-[16px] text-[14.5px] flex items-center justify-center gap-2 shadow-sm cursor-pointer transition-all"
+      >
+        <Sparkles className="w-4.5 h-4.5" />
+        <span>{isTamil ? 'தகுதி ஆய்வை தொடங்கு →' : 'Proceed to Eligibility Check →'}</span>
+      </button>
 
-        {/* =========================================================================
-            8. SECTION I — PRIMARY HOUSEHOLD ACTION CTA
-           ========================================================================= */}
-        <section className="w-full pt-2 pb-2 mt-auto">
-          <button
-            type="button"
-            onClick={() => setIsAddModalOpen(true)}
-            className="w-full bg-[#155B4D] hover:bg-[#11493e] active:scale-[0.99] text-white rounded-[16px] py-3.5 sm:py-4 px-6 flex items-center justify-center gap-2.5 font-bold text-[15px] sm:text-[16px] shadow-sm transition-all cursor-pointer group"
-          >
-            <UserPlus className="w-5 h-5 stroke-[2.2] text-white group-hover:scale-105 transition-transform" />
-            <span className={isTamil ? 'font-tamil' : ''}>
-              {t.addHouseholdMemberCTA}
-            </span>
-          </button>
-        </section>
-      </main>
-
-      {/* =========================================================================
-          INTERACTIVE MODALS
-         ========================================================================= */}
-      {/* 1. Edit Member Modal */}
-      <EditMemberModal
-        isOpen={editingMember !== null}
-        member={editingMember}
-        currentLang={currentLang}
-        onSave={handleSaveEditedMember}
-        onDelete={handleDeleteMember}
-        onClose={() => setEditingMember(null)}
-      />
-
-      {/* 2. Add Member Modal */}
+      {/* Modals */}
       <AddMemberModal
         isOpen={isAddModalOpen}
         currentLang={currentLang}
-        onAdd={handleAddNewMember}
         onClose={() => setIsAddModalOpen(false)}
+        onAdd={handleAddNewMember}
       />
 
-      {/* 3. Update Household Profile Modal */}
+      {editingMember && (
+        <EditMemberModal
+          isOpen={true}
+          currentLang={currentLang}
+          member={editingMember}
+          onClose={() => setEditingMember(null)}
+          onSave={handleSaveEditedMember}
+          onDelete={(id: string) => {
+            setEditingMember(null);
+            setDeletingMemberId(id);
+          }}
+        />
+      )}
+
       <UpdateHouseholdModal
         isOpen={isHouseholdModalOpen}
         currentLang={currentLang}
         profile={householdProfile}
-        onSave={onUpdateProfile}
         onClose={() => setIsHouseholdModalOpen(false)}
-        onNavigateToProfile={onNavigateToProfile}
+        onSave={(prof: HouseholdProfile) => {
+          householdService.updateHouseholdProfile(prof);
+          onUpdateProfile(prof);
+          setIsHouseholdModalOpen(false);
+        }}
       />
 
-      {/* 4. Notification Drawer */}
-      <NotificationDrawer
-        isOpen={isNotificationDrawerOpen}
-        currentLang={currentLang}
-        notifications={[
-          {
-            id: 'notif-1',
-            titleEn: 'Household Record Verified',
-            titleTa: 'குடும்ப விவரங்கள் சரிபார்க்கப்பட்டது',
-            descEn: 'Civil supplies database synchronized for 4 members.',
-            descTa: '4 உறுப்பினர்களுக்கான ஸ்மார்ட் குடும்ப அட்டை தகவல் புதுப்பிக்கப்பட்டது.',
-            timeEn: '10m ago',
-            timeTa: '10 நிமிடங்களுக்கு முன்',
-            read: false,
-            type: 'scheme',
-          },
-        ]}
-        onMarkAllRead={() => {}}
-        onSelectNotification={() => {}}
-        onClose={() => setIsNotificationDrawerOpen(false)}
-      />
+      {/* Remove Member Confirmation Dialog */}
+      {deletingMemberId && (
+        <div className="fixed inset-0 z-50 bg-black/45 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="w-full max-w-[380px] bg-white rounded-[22px] border border-rose-200 p-5 shadow-2xl text-center animate-in zoom-in-95">
+            <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto mb-3">
+              <AlertTriangle className="w-6 h-6 stroke-[2.4]" />
+            </div>
+
+            <h3 className="font-bold text-[16px] text-[#202820]">
+              {isTamil ? 'உறுப்பினரை நீக்க உறுதிப்படுத்துக' : 'Confirm Member Removal'}
+            </h3>
+
+            <p className="text-[12px] text-[#69756F] mt-1.5 mb-4 leading-relaxed">
+              {isTamil
+                ? `'${memberToDelete?.name}' என்ற உறுப்பினரின் விவரங்களை குடும்ப பட்டியலிலிருந்து நீக்க விரும்புகிறீர்களா?`
+                : `Are you sure you want to remove '${memberToDelete?.name}' and their questionnaire records?`}
+            </p>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setDeletingMemberId(null)}
+                className="flex-1 py-2 rounded-[12px] border border-gray-300 text-gray-700 font-bold text-[12.5px] cursor-pointer"
+              >
+                {isTamil ? 'ரத்து' : 'Cancel'}
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDeleteMember}
+                className="flex-1 py-2 rounded-[12px] bg-rose-600 hover:bg-rose-700 text-white font-bold text-[12.5px] cursor-pointer shadow-xs"
+              >
+                {isTamil ? 'நீக்கு' : 'Remove'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,15 +1,25 @@
 import React, { useState } from 'react';
-import { Language } from '../../types';
-import { TrustModal } from '../TrustModal';
-import { BottomNav } from './BottomNav';
-import { DashboardHeader } from './DashboardHeader';
+import {
+  AlertCircle,
+  ArrowRight,
+  CheckCircle2,
+  ChevronRight,
+  ClipboardCheck,
+  FileText,
+  HeartPulse,
+  Home,
+  Info,
+  LayoutGrid,
+  Search,
+  Sparkles,
+  Users,
+} from 'lucide-react';
+import { translations } from '../../data/translations';
+import { evaluationService } from '../../services/evaluationService';
+import { householdService } from '../../services/householdService';
+import { HouseholdMember, Language } from '../../types';
 import { DashboardHero } from './DashboardHero';
 import { HouseholdCard } from './HouseholdCard';
-import { AccountModal } from './modals/AccountModal';
-import { HouseholdMember, HouseholdModal } from './modals/HouseholdModal';
-import { MyResultsModal } from './modals/MyResultsModal';
-import { CitizenNotification, NotificationDrawer } from './modals/NotificationDrawer';
-import { ProfileCompletionModal, ProfileStep } from './modals/ProfileCompletionModal';
 import { ProfileCompletionCard } from './ProfileCompletionCard';
 import { QuickActionsGrid } from './QuickActionsGrid';
 import { RecommendedSchemesSection } from './RecommendedSchemesSection';
@@ -23,315 +33,153 @@ interface CitizenDashboardProps {
   onNavigateToHousehold?: () => void;
   onNavigateToProfile?: () => void;
   onNavigateToAccount?: () => void;
+  onNavigateToResults?: () => void;
+  onNavigateToCheck?: () => void;
   householdMembers?: HouseholdMember[];
   onUpdateMembers?: (members: HouseholdMember[]) => void;
 }
 
 export const CitizenDashboard: React.FC<CitizenDashboardProps> = ({
   currentLang,
-  onOpenLanguage,
   onNavigateToExplorer,
   onNavigateToScheme,
-  onNavigateToLanding,
   onNavigateToHousehold,
   onNavigateToProfile,
   onNavigateToAccount,
-  householdMembers: propHouseholdMembers,
-  onUpdateMembers,
+  onNavigateToResults,
+  onNavigateToCheck,
 }) => {
-  // Household members state (persisted or defaulted to family of 4)
-  const [internalHouseholdMembers, setInternalHouseholdMembers] = useState<HouseholdMember[]>([
-    {
-      id: 'm1',
-      name: 'Rajesh Kumar',
-      nameTa: 'ராஜேஷ் குமார்',
-      relation: 'Head of Household',
-      relationTa: 'குடும்பத் தலைவர்',
-      age: 42,
-      gender: 'Male',
-      genderTa: 'ஆண்',
-      aadhaarLinked: true,
-      avatarType: 'male_head',
-    },
-    {
-      id: 'm2',
-      name: 'Lakshmi Rajesh',
-      nameTa: 'லட்சுமி ராஜேஷ்',
-      relation: 'Wife',
-      relationTa: 'மனைவி',
-      age: 38,
-      gender: 'Female',
-      genderTa: 'பெண்',
-      aadhaarLinked: true,
-      avatarType: 'female_spouse',
-    },
-    {
-      id: 'm3',
-      name: 'Aadhavan',
-      nameTa: 'ஆதவன்',
-      relation: 'Son',
-      relationTa: 'மகன்',
-      age: 14,
-      gender: 'Male',
-      genderTa: 'ஆண்',
-      aadhaarLinked: true,
-      avatarType: 'boy_son',
-    },
-    {
-      id: 'm4',
-      name: 'Anitha',
-      nameTa: 'அனிதா',
-      relation: 'Daughter',
-      relationTa: 'மகள்',
-      age: 10,
-      gender: 'Female',
-      genderTa: 'பெண்',
-      aadhaarLinked: true,
-      avatarType: 'girl_daughter',
-    },
-  ]);
+  const isTamil = currentLang === 'ta';
+  const t = translations[currentLang];
 
-  const householdMembers = propHouseholdMembers || internalHouseholdMembers;
-  const setHouseholdMembers = onUpdateMembers || setInternalHouseholdMembers;
+  const householdState = householdService.getState();
+  const completeness = householdService.calculateCompleteness();
+  const latestEvaluation = evaluationService.getLatestEvaluation();
 
-  // Profile completion steps state (3 of 4 completed = 75%)
-  const [profileSteps, setProfileSteps] = useState<ProfileStep[]>([
-    {
-      id: 'step-identity',
-      titleEn: 'Identity & Biometric Aadhaar Verification',
-      titleTa: 'அடையாளம் மற்றும் ஆதார் சரிபார்ப்பு',
-      descEn: 'Verified through UIDAI e-KYC authentication.',
-      descTa: 'ஆதார் கைரேகை சரிபார்ப்பு நிறைவடைந்தது.',
-      completed: true,
-      weight: 25,
-    },
-    {
-      id: 'step-ration',
-      titleEn: 'Tamil Nadu Smart Family Card (TNPDS)',
-      titleTa: 'தமிழ்நாடு ஸ்மார்ட் குடும்ப அட்டை (TNPDS)',
-      descEn: 'Linked with Civil Supplies database (03/G/0892415).',
-      descTa: 'குடும்ப அட்டை எண் 03/G/0892415 இணைக்கப்பட்டுள்ளது.',
-      completed: true,
-      weight: 25,
-    },
-    {
-      id: 'step-income',
-      titleEn: 'Annual Household Income Certificate',
-      titleTa: 'வருவாய்த்துறை ஆண்டு வருமானச் சான்றிதழ்',
-      descEn: 'Tahsildar verified annual income ₹96,000.',
-      descTa: 'வட்டாட்சியர் சான்றளித்த வருமானம் ₹96,000.',
-      completed: true,
-      weight: 25,
-    },
-    {
-      id: 'step-land',
-      titleEn: 'Land Revenue Record (Patta/Chitta) & Electricity',
-      titleTa: 'பட்டா/சிட்டா நில ஆவணம் & மின் நுகர்வோர் எண்',
-      descEn: 'Upload patta document to unlock agriculture subsidies.',
-      descTa: 'விவசாய மானியங்களைப் பெற பட்டா நகலை இணைக்கவும்.',
-      completed: false,
-      weight: 25,
-    },
-  ]);
-
-  // Notifications state
-  const [notifications, setNotifications] = useState<CitizenNotification[]>([
-    {
-      id: 'notif-1',
-      titleEn: 'CMCHIS Health Card Active',
-      titleTa: 'CMCHIS மருத்துவ காப்பீடு புதுப்பிக்கப்பட்டது',
-      descEn: 'Your family cashless limit of ₹5 Lakhs is active across empanelled hospitals.',
-      descTa: 'உங்கள் குடும்பத்திற்கான ₹5 லட்சம் மருத்துவ சிகிச்சை அட்டை பயன்பாட்டில் உள்ளது.',
-      timeEn: '2 hours ago',
-      timeTa: '2 மணி நேரத்திற்கு முன்',
-      read: false,
-      type: 'scheme',
-    },
-    {
-      id: 'notif-2',
-      titleEn: 'Pudhumai Penn Verification Window Open',
-      titleTa: 'புதுமைப் பெண் கல்வி உதவித்தொகை சரிபார்ப்பு',
-      descEn: 'Priya’s 2nd year undergraduate attendance verification submitted by college.',
-      descTa: 'மகள் பிரியாவின் கல்லூரி வருகைப் பதிவு வெற்றிகரமாக சரிபார்க்கப்பட்டது.',
-      timeEn: 'Yesterday',
-      timeTa: 'நேற்று',
-      read: false,
-      type: 'document',
-    },
-    {
-      id: 'notif-3',
-      titleEn: 'Uzhavan Subsidy Seed Distribution',
-      titleTa: 'உழவன் செயலி மானிய விதை விநியோகம்',
-      descEn: 'Subsidised certified paddy seeds available at Madurai Block Agriculture Office.',
-      descTa: 'மதுரை வட்டார வேளாண் விரிவாக்க மையத்தில் மானிய விலையில் தரமான நெல் விதைகள்.',
-      timeEn: '3 days ago',
-      timeTa: '3 நாட்களுக்கு முன்',
-      read: true,
-      type: 'reminder',
-    },
-  ]);
-
-  // Modal display states
-  const [isHouseholdModalOpen, setIsHouseholdModalOpen] = useState(false);
-  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-  const [isNotificationDrawerOpen, setIsNotificationDrawerOpen] = useState(false);
-  const [isMyResultsModalOpen, setIsMyResultsModalOpen] = useState(false);
-  const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
-  const [isTrustModalOpen, setIsTrustModalOpen] = useState(false);
-
-  // Calculated profile percentage
-  const completionPercentage = profileSteps.reduce(
-    (acc, s) => acc + (s.completed ? s.weight : 0),
-    0
-  );
-
-  const unreadNotificationsCount = notifications.filter((n) => !n.read).length;
-
-  const handleToggleStep = (stepId: string) => {
-    setProfileSteps((prev) =>
-      prev.map((s) => (s.id === stepId ? { ...s, completed: !s.completed } : s))
-    );
-  };
-
-  const handleMarkAllRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-  };
+  const handleHouseholdAction = onNavigateToHousehold || (() => {});
+  const handleProfileAction = onNavigateToProfile || (() => {});
+  const handleResultsAction = onNavigateToResults || (() => {});
+  const handleCheckAction = onNavigateToCheck || onNavigateToExplorer;
 
   return (
-    <div className="relative w-full mx-auto min-h-screen bg-[#FAF7EF] text-[#202820] flex flex-col justify-between overflow-x-hidden pt-1 pb-0 antialiased">
-      {/* Scrollable Content Container */}
-      <main className="w-full flex-1 flex flex-col justify-start pb-4">
-        {/* =========================================================================
-            1. TOP BRAND HEADER with Language Selector & Notification Bell
-           ========================================================================= */}
-        <DashboardHeader
-          currentLang={currentLang}
-          unreadCount={unreadNotificationsCount}
-          onOpenLanguage={onOpenLanguage}
-          onOpenNotifications={() => setIsNotificationDrawerOpen(true)}
-          onNavigateHome={onNavigateToLanding}
-        />
-
-        {/* =========================================================================
-            2. PERSONALISED GREETING & CHECKLIST HERO ILLUSTRATION
-           ========================================================================= */}
-        <DashboardHero
-          currentLang={currentLang}
-          citizenName="Murali"
-          citizenNameTa="முரளி"
-        />
-
-        {/* =========================================================================
-            3. HOUSEHOLD SUMMARY CARD
-           ========================================================================= */}
-        <HouseholdCard
-          currentLang={currentLang}
-          memberCount={householdMembers.length}
-          onOpenHousehold={onNavigateToHousehold || (() => setIsHouseholdModalOpen(true))}
-        />
-
-        {/* =========================================================================
-            4. PROFILE COMPLETION PROGRESS CARD (75% Circular Ring)
-           ========================================================================= */}
-        <ProfileCompletionCard
-          currentLang={currentLang}
-          completionPercentage={completionPercentage}
-          onOpenProfile={onNavigateToProfile || (() => setIsProfileModalOpen(true))}
-        />
-
-        {/* =========================================================================
-            5. QUICK ACTIONS HEADING & FOUR TILES
-           ========================================================================= */}
-        <QuickActionsGrid
-          currentLang={currentLang}
-          onManageHousehold={onNavigateToHousehold || (() => setIsHouseholdModalOpen(true))}
-          onUpdateProfile={onNavigateToProfile || (() => setIsProfileModalOpen(true))}
-          onExploreSchemes={onNavigateToExplorer}
-          onMyResults={() => setIsMyResultsModalOpen(true)}
-        />
-
-        {/* =========================================================================
-            6. RECOMMENDED SCHEMES HEADING & 2 SCHEME CARDS (CMCHIS & SCHOLARSHIP)
-           ========================================================================= */}
-        <RecommendedSchemesSection
-          currentLang={currentLang}
-          onViewAll={onNavigateToExplorer}
-          onSelectScheme={onNavigateToScheme}
-        />
-      </main>
-
-      {/* =========================================================================
-          7. FIXED BOTTOM NAVIGATION (Home, Schemes, My Results, Account)
-         ========================================================================= */}
-      <BottomNav
+    <div className="w-full max-w-[460px] mx-auto px-4 py-2 pb-6 text-left select-none flex flex-col justify-start">
+      {/* 1. HERO GREETING WITH SECRETARIAT ILLUSTRATION */}
+      <DashboardHero
         currentLang={currentLang}
-        activeItem="home"
-        onNavigateHome={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-        onNavigateSchemes={onNavigateToExplorer}
-        onNavigateResults={() => setIsMyResultsModalOpen(true)}
-        onNavigateAccount={onNavigateToAccount ? onNavigateToAccount : () => setIsAccountModalOpen(true)}
+        citizenName={householdState.profile.headName.split(' ')[0] || 'Citizen'}
+        citizenNameTa={householdState.profile.headNameTa?.split(' ')[0] || 'குடிமகன்'}
       />
 
-      {/* =========================================================================
-          INTERACTIVE MODALS & DRAWERS
-         ========================================================================= */}
-      {/* Household Modal */}
-      <HouseholdModal
-        isOpen={isHouseholdModalOpen}
+      {/* 2. REAL HOUSEHOLD SUMMARY CARD */}
+      <HouseholdCard
         currentLang={currentLang}
-        members={householdMembers}
-        onSaveMembers={setHouseholdMembers}
-        onClose={() => setIsHouseholdModalOpen(false)}
+        memberCount={householdState.members.length}
+        onOpenHousehold={handleHouseholdAction}
       />
 
-      {/* Profile Completion Modal */}
-      <ProfileCompletionModal
-        isOpen={isProfileModalOpen}
+      {/* 3. REAL PROGRESS / COMPLETION CARD */}
+      <ProfileCompletionCard
         currentLang={currentLang}
-        steps={profileSteps}
-        onToggleStep={handleToggleStep}
-        onClose={() => setIsProfileModalOpen(false)}
+        completionPercentage={completeness.percentage}
+        onOpenProfile={handleProfileAction}
       />
 
-      {/* Notification Drawer */}
-      <NotificationDrawer
-        isOpen={isNotificationDrawerOpen}
+      {/* 4. REAL CONTINUE / RESUME CARD */}
+      <section className="w-full my-3">
+        <div className="w-full bg-gradient-to-r from-[#155B4D] to-[#1D7463] text-white rounded-[22px] p-4 shadow-sm flex items-center justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <span className="text-[10px] font-bold uppercase tracking-wider bg-white/20 px-2 py-0.5 rounded-full inline-block mb-1">
+              {completeness.percentage < 100
+                ? (isTamil ? 'அடுத்த படி' : 'Next Step')
+                : (isTamil ? 'தயாராக உள்ளது' : 'Ready to Evaluate')}
+            </span>
+            <h3 className="font-bold text-[15px] sm:text-[16px] leading-tight">
+              {completeness.percentage < 100
+                ? (isTamil ? 'குடும்ப விவரங்களை பூர்த்தி செய்க' : 'Complete Questionnaire')
+                : (isTamil ? 'தகுதி ஆய்வை இயக்குக' : 'Run Eligibility Check')}
+            </h3>
+            <p className="text-[11.5px] text-white/80 mt-0.5 leading-snug">
+              {completeness.percentage < 100
+                ? (isTamil
+                    ? 'விடுபட்ட விவரங்களை உள்ளிட்டு கூடுதல் திட்டங்களைக் கண்டறியவும்.'
+                    : 'Fill pending answers to evaluate matching state schemes.')
+                : (isTamil
+                    ? 'உங்கள் குடும்ப சுயவிவரத்திற்கு தகுதியான திட்டங்களை ஆய்வு செய்யவும்.'
+                    : 'Discover personalized scheme benefits tailored to your household.')}
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={completeness.percentage < 100 ? handleProfileAction : handleCheckAction}
+            className="w-10 h-10 rounded-full bg-[#FCE8A2] text-[#155B4D] flex items-center justify-center shrink-0 shadow-md hover:scale-105 active:scale-95 transition-all cursor-pointer"
+            aria-label="Continue workflow"
+          >
+            <ArrowRight className="w-5 h-5 stroke-[2.6]" />
+          </button>
+        </div>
+      </section>
+
+      {/* 5. LATEST EVALUATION SUMMARY CARD (If an evaluation exists) */}
+      {latestEvaluation && latestEvaluation.results?.length > 0 && (
+        <section className="w-full my-1">
+          <div
+            onClick={handleResultsAction}
+            className="w-full bg-white rounded-[20px] p-3.5 border border-[#DFEBE1] shadow-2xs hover:bg-[#FAFDF9] transition-all cursor-pointer group"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-1.5">
+                <ClipboardCheck className="w-4 h-4 text-[#155B4D]" />
+                <span className="font-bold text-[13px] text-[#155B4D]">
+                  {isTamil ? 'சமீபத்திய தகுதி ஆய்வு முடிவுகள்' : 'Latest Evaluation Summary'}
+                </span>
+              </div>
+              <span className="text-[10.5px] text-[#88948D]">{latestEvaluation.evaluatedAt}</span>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2 text-center text-[11px] font-bold">
+              <div className="p-2 rounded-[10px] bg-[#EAF5EA] text-[#136149]">
+                <span className="text-[15px] block leading-none">
+                  {latestEvaluation.results.filter((r) => r.status === 'matched').length}
+                </span>
+                <span className="text-[9.5px] mt-0.5 block">{isTamil ? 'முழு தகுதி' : 'MATCH'}</span>
+              </div>
+              <div className="p-2 rounded-[10px] bg-[#FFF8E6] text-[#A66F00]">
+                <span className="text-[15px] block leading-none">
+                  {latestEvaluation.results.filter((r) => r.status === 'conditional').length}
+                </span>
+                <span className="text-[9.5px] mt-0.5 block">{isTamil ? 'நிபந்தனை' : 'CONDITIONAL'}</span>
+              </div>
+              <div className="p-2 rounded-[10px] bg-[#EEF4FF] text-[#2563EB]">
+                <span className="text-[15px] block leading-none">
+                  {latestEvaluation.results.filter((r) => r.status === 'insufficient' || r.status === 'conflict').length}
+                </span>
+                <span className="text-[9.5px] mt-0.5 block">{isTamil ? 'ஆய்வு தேவை' : 'PENDING'}</span>
+              </div>
+            </div>
+
+            <div className="mt-2.5 pt-2 border-t border-[#F0EBE0] flex items-center justify-between text-[11.5px] text-[#155B4D] font-bold">
+              <span>{isTamil ? 'முழு முடிவுகளைக் காண்க' : 'View Full Evaluation Breakdown'}</span>
+              <ChevronRight className="w-4 h-4 stroke-[2.4] group-hover:translate-x-0.5 transition-transform" />
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* 6. QUICK ACTIONS GRID */}
+      <QuickActionsGrid
         currentLang={currentLang}
-        notifications={notifications}
-        onMarkAllRead={handleMarkAllRead}
-        onSelectNotification={(id) => {
-          setNotifications((prev) =>
-            prev.map((n) => (n.id === id ? { ...n, read: true } : n))
-          );
-        }}
-        onClose={() => setIsNotificationDrawerOpen(false)}
+        onManageHousehold={handleHouseholdAction}
+        onUpdateProfile={handleProfileAction}
+        onExploreSchemes={onNavigateToExplorer}
+        onMyResults={handleResultsAction}
       />
 
-      {/* My Results Modal */}
-      <MyResultsModal
-        isOpen={isMyResultsModalOpen}
+      {/* 7. RECOMMENDED SCHEMES SECTION */}
+      <RecommendedSchemesSection
         currentLang={currentLang}
-        onSelectScheme={(id) => {
-          setIsMyResultsModalOpen(false);
-          onNavigateToScheme(id);
-        }}
-        onClose={() => setIsMyResultsModalOpen(false)}
-      />
-
-      {/* Account Modal */}
-      <AccountModal
-        isOpen={isAccountModalOpen}
-        currentLang={currentLang}
-        onOpenLanguage={onOpenLanguage}
-        onOpenTrustModal={() => setIsTrustModalOpen(true)}
-        onClose={() => setIsAccountModalOpen(false)}
-      />
-
-      {/* Privacy Charter Modal */}
-      <TrustModal
-        isOpen={isTrustModalOpen}
-        currentLang={currentLang}
-        onClose={() => setIsTrustModalOpen(false)}
+        onViewAll={onNavigateToExplorer}
+        onSelectScheme={onNavigateToScheme}
       />
     </div>
   );

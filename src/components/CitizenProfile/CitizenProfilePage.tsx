@@ -1,131 +1,78 @@
-import React, { useState } from 'react';
-import { ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { ArrowLeft, CheckCircle2, ChevronLeft, ChevronRight, Home, Users } from 'lucide-react';
 import { translations } from '../../data/translations';
+import { householdService } from '../../services/householdService';
 import { CitizenProfileData, Language } from '../../types';
-import { DashboardHeader } from '../Dashboard/DashboardHeader';
-import { CitizenNotification, NotificationDrawer } from '../Dashboard/modals/NotificationDrawer';
 import { EducationWorkForm } from './EducationWorkForm';
 import { HousingAssetsForm } from './HousingAssetsForm';
 import { IncomeLivelihoodForm } from './IncomeLivelihoodForm';
 import { OtherDetailsForm } from './OtherDetailsForm';
 import { PersonalInformationForm } from './PersonalInformationForm';
-import { ProfileCompletedCard } from './ProfileCompletedCard';
 import { ProfileReviewPage } from './ProfileReviewPage';
 import { QuestionnaireProgress } from './QuestionnaireProgress';
+import { NotFoundPage } from '../Common/NotFoundPage';
 
 interface CitizenProfilePageProps {
+  memberId?: string;
   currentLang: Language;
   initialStep?: number | 'review';
   onNavigateBack: () => void;
   onNavigateHome: () => void;
-  onNavigateToExplorer: () => void;
-  onNavigateToDashboard: () => void;
+  onNavigateToHousehold: () => void;
   onOpenLanguage: () => void;
 }
 
-const defaultCitizenProfile: CitizenProfileData = {
-  // Step 1: Personal Information (Matches reference screen exactly)
-  fullName: 'ராஜேஷ் குமார்',
-  gender: 'Male',
-  age: 42,
-  dob: '15-06-1982',
-  maritalStatus: 'married',
-  idDocType: 'aadhaar',
-  idDocNumber: '1234 5678 9012',
-  isStep1Unknown: false,
-
-  // Step 2: Education & Work
-  educationLevel: 'secondary',
-  occupationType: 'farmer',
-  isStudentEnrolled: false,
-  isStep2Unknown: false,
-
-  // Step 3: Income & Livelihood
-  annualIncome: 96000,
-  incomeCertificateAvailable: true,
-  bplStatus: true,
-  landHoldingAcres: 1.5,
-  isStep3Unknown: false,
-
-  // Step 4: Housing & Assets
-  housingType: 'own',
-  roofType: 'semi_pucca',
-  electricityConnection: true,
-  cookingGasLPG: true,
-  isStep4Unknown: false,
-
-  // Step 5: Other Details
-  socialCategory: 'bc',
-  differentlyAbled: false,
-  bankAccountLinked: true,
-  isStep5Unknown: false,
-};
-
-const getSavedProfileData = (): CitizenProfileData => {
-  try {
-    const saved = localStorage.getItem('urimai_aram_citizen_profile');
-    if (saved) {
-      return { ...defaultCitizenProfile, ...JSON.parse(saved) };
-    }
-  } catch {
-    // ignore
-  }
-  return defaultCitizenProfile;
-};
-
 export const CitizenProfilePage: React.FC<CitizenProfilePageProps> = ({
+  memberId = 'm1',
   currentLang,
   initialStep = 1,
   onNavigateBack,
   onNavigateHome,
-  onNavigateToExplorer,
-  onNavigateToDashboard,
+  onNavigateToHousehold,
   onOpenLanguage,
 }) => {
   const t = translations[currentLang];
   const isTamil = currentLang === 'ta';
 
+  const member = householdService.getMember(memberId);
+
+  if (!member) {
+    return (
+      <NotFoundPage
+        currentLang={currentLang}
+        title={isTamil ? `உறுப்பினர் '${memberId}' காணப்படவில்லை` : `Member '${memberId}' Not Found`}
+        message={
+          isTamil
+            ? 'கோரப்பட்ட குடும்ப உறுப்பினர் விவரம் பதிவேட்டில் இல்லை. குடும்ப மையத்திற்குத் திரும்பவும்.'
+            : `The household member ID '${memberId}' does not exist in your household. Please return to the Household Hub.`
+        }
+        onNavigateHome={onNavigateToHousehold}
+      />
+    );
+  }
+
   const [currentStep, setCurrentStep] = useState<number>(
     typeof initialStep === 'number' && initialStep >= 1 && initialStep <= 5 ? initialStep : 1
   );
   const [isReviewing, setIsReviewing] = useState<boolean>(initialStep === 'review');
-  const [formData, setFormData] = useState<CitizenProfileData>(getSavedProfileData);
-  const [isCompleted, setIsCompleted] = useState<boolean>(initialStep === 6);
-  const [isNotificationDrawerOpen, setIsNotificationDrawerOpen] = useState(false);
+  const [formData, setFormData] = useState<CitizenProfileData>(() =>
+    householdService.getMemberProfile(memberId)
+  );
+  const [isCompleted, setIsCompleted] = useState<boolean>(false);
 
-  const [notifications, setNotifications] = useState<CitizenNotification[]>([
-    {
-      id: 'notif-1',
-      titleEn: 'CMCHIS Health Card Active',
-      titleTa: 'CMCHIS மருத்துவ காப்பீடு புதுப்பிக்கப்பட்டது',
-      descEn: 'Your family cashless limit of ₹5 Lakhs is active across empanelled hospitals.',
-      descTa: 'உங்கள் குடும்பத்திற்கான ₹5 லட்சம் மருத்துவ சிகிச்சை அட்டை பயன்பாட்டில் உள்ளது.',
-      timeEn: '2 hours ago',
-      timeTa: '2 மணி நேரத்திற்கு முன்',
-      read: false,
-      type: 'scheme',
-    },
-    {
-      id: 'notif-2',
-      titleEn: 'Pudhumai Penn Verification Window Open',
-      titleTa: 'புதுமைப் பெண் கல்வி உதவித்தொகை சரிபார்ப்பு',
-      descEn: 'Priya’s 2nd year undergraduate attendance verification submitted by college.',
-      descTa: 'மகள் பிரியாவின் கல்லூரி வருகைப் பதிவு வெற்றிகரமாக சரிபார்க்கப்பட்டது.',
-      timeEn: 'Yesterday',
-      timeTa: 'நேற்று',
-      read: false,
-      type: 'document',
-    },
-  ]);
+  useEffect(() => {
+    // When memberId changes, reload that member's specific profile
+    const prof = householdService.getMemberProfile(memberId);
+    setFormData(prof);
+    setCurrentStep(1);
+    setIsReviewing(false);
+    setIsCompleted(false);
+  }, [memberId]);
 
   const handleUpdateFormData = (updated: Partial<CitizenProfileData>) => {
     setFormData((prev) => {
       const next = { ...prev, ...updated };
-      try {
-        localStorage.setItem('urimai_aram_citizen_profile', JSON.stringify(next));
-      } catch {
-        // ignore
-      }
+      householdService.saveMemberProfile(memberId, next);
       return next;
     });
   };
@@ -135,7 +82,6 @@ export const CitizenProfilePage: React.FC<CitizenProfilePageProps> = ({
       setCurrentStep((prev) => prev + 1);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
-      // Step 5 leads to Profile Review screen
       setIsReviewing(true);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -150,10 +96,10 @@ export const CitizenProfilePage: React.FC<CitizenProfilePageProps> = ({
     }
   };
 
-  const handleRestart = () => {
-    setIsCompleted(false);
+  const handleConfirmAndComplete = () => {
+    householdService.saveMemberProfile(memberId, formData);
     setIsReviewing(false);
-    setCurrentStep(1);
+    setIsCompleted(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -178,71 +124,79 @@ export const CitizenProfilePage: React.FC<CitizenProfilePageProps> = ({
           setCurrentStep(4);
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
-        onConfirm={() => {
-          setIsReviewing(false);
-          setIsCompleted(true);
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }}
+        onConfirm={handleConfirmAndComplete}
       />
     );
   }
 
   return (
-    <div className="relative w-full mx-auto min-h-screen bg-[#FAF7EF] text-[#202820] flex flex-col justify-between overflow-x-hidden pt-1 pb-6 antialiased select-none">
-      {/* Main Content Area */}
-      <main className="w-full flex-1 flex flex-col justify-start px-4 sm:px-5 pb-4">
-        {/* =========================================================================
-            2. BRAND HEADER with Logo, Language Selector & Notification Bell
-           ========================================================================= */}
-        <div className="-mx-4 sm:-mx-5">
-          <DashboardHeader
-            currentLang={currentLang}
-            unreadCount={notifications.filter((n) => !n.read).length}
-            onOpenLanguage={onOpenLanguage}
-            onOpenNotifications={() => setIsNotificationDrawerOpen(true)}
-            onNavigateHome={onNavigateHome}
-          />
+    <div className="w-full max-w-[460px] mx-auto px-4 py-3 pb-8 text-left select-none">
+      {/* Top Header Row */}
+      <section className="flex items-center justify-between mb-3">
+        <button
+          type="button"
+          onClick={onNavigateBack}
+          className="p-1 -ml-1 text-[#155B4D] hover:bg-[#E5F1E7] rounded-full transition-all cursor-pointer"
+          aria-label={t.back}
+        >
+          <ArrowLeft className="w-5.5 h-5.5 stroke-[2.4]" />
+        </button>
+
+        <div className="flex items-center gap-1.5 text-[11.5px] font-semibold text-[#155B4D] bg-[#E8F3EB] px-3 py-1 rounded-full border border-[#CDE1D0]">
+          <Users className="w-3.5 h-3.5" />
+          <span>
+            {member ? (isTamil ? member.nameTa || member.name : member.name) : 'Household Member'}
+          </span>
+          {member && <span className="text-[10px] text-[#55645E]">({member.relation})</span>}
         </div>
+      </section>
 
-        {/* =========================================================================
-            3. PAGE INTRODUCTION: Back Arrow, Title & Explanatory Description
-           ========================================================================= */}
-        <section className="w-full mt-3 sm:mt-4 mb-4">
-          {/* Back Arrow & Heading Row */}
-          <div className="flex items-start gap-2.5 sm:gap-3">
-            <button
-              type="button"
-              onClick={onNavigateBack}
-              className="mt-0.5 p-1 -ml-1 text-[#155B4D] hover:bg-[#E5F1E7]/60 active:scale-95 rounded-full transition-all cursor-pointer shrink-0"
-              aria-label={t.back}
-            >
-              <ArrowLeft className="w-5.5 h-5.5 sm:w-6 sm:h-6 stroke-[2.4]" />
-            </button>
+      {/* Heading */}
+      <section className="mb-4">
+        <h1
+          className={`text-[#155B4D] font-bold text-[22px] sm:text-[24px] leading-tight tracking-tight ${
+            isTamil ? 'font-tamil' : ''
+          }`}
+        >
+          {isTamil ? 'உறுப்பினர் தகுதி கேள்வித்தாள்' : 'Member Questionnaire'}
+        </h1>
+        <p className={`text-[#59635F] text-[13px] leading-snug mt-1 ${isTamil ? 'font-tamil' : ''}`}>
+          {isTamil
+            ? 'அனைத்து 5 பகுதிகளையும் பூர்த்தி செய்வதன் மூலம் தகுதியான நலத்திட்டங்களை துல்லியமாக கண்டறியலாம்.'
+            : 'Complete the 5 sections to evaluate scheme eligibility criteria for this member.'}
+        </p>
+      </section>
 
-            <div className="flex-1 flex flex-col">
-              <h1
-                className={`text-[#155B4D] font-bold text-[22px] sm:text-[25px] leading-[1.25] tracking-tight text-left ${
-                  isTamil ? 'font-tamil' : ''
-                }`}
-              >
-                {t.citizenProfileTitle}
-              </h1>
-
-              <p
-                className={`text-[#59635F] text-[13px] sm:text-[14px] font-normal leading-snug mt-1.5 text-left ${
-                  isTamil ? 'font-tamil' : ''
-                }`}
-              >
-                {t.citizenProfileDesc}
-              </p>
-            </div>
+      {/* Completion View */}
+      {isCompleted ? (
+        <section className="bg-white rounded-[22px] border border-[#CDE1D0] p-6 shadow-sm text-center space-y-4">
+          <div className="w-16 h-16 rounded-full bg-[#E8F3EB] text-[#155B4D] flex items-center justify-center mx-auto">
+            <CheckCircle2 className="w-9 h-9 stroke-[2.4]" />
           </div>
-        </section>
 
-        {/* =========================================================================
-            4. FIVE-STEP QUESTIONNAIRE PROGRESS PANEL
-           ========================================================================= */}
-        {!isCompleted && (
+          <div>
+            <h2 className="text-[18px] font-bold text-[#155B4D]">
+              {isTamil ? 'கேள்வித்தாள் வெற்றிகரமாக சேமிக்கப்பட்டது!' : 'Questionnaire Saved Successfully!'}
+            </h2>
+            <p className="text-[12.5px] text-[#55645E] mt-1.5 max-w-xs mx-auto leading-relaxed">
+              {isTamil
+                ? `${member ? member.name : 'உறுப்பினர்'} பற்றிய விவரங்கள் புதுப்பிக்கப்பட்டன. இப்போது குடும்ப முனையத்திற்குத் திரும்பலாம்.`
+                : `Profile details for ${member ? member.name : 'this member'} have been recorded. Return to the Household Hub to continue.`}
+            </p>
+          </div>
+
+          {/* CRITICAL: A01 Fix: Returns to Household Hub (NOT public explorer!) */}
+          <button
+            type="button"
+            onClick={onNavigateToHousehold}
+            className="w-full py-3.5 bg-[#155B4D] hover:bg-[#10483D] active:scale-[0.99] text-white font-bold rounded-[14px] text-[14px] shadow-sm flex items-center justify-center gap-2 cursor-pointer transition-all"
+          >
+            <span>{isTamil ? 'குடும்ப முனையத்திற்குத் திரும்பு →' : 'Return to Household Hub →'}</span>
+          </button>
+        </section>
+      ) : (
+        <>
+          {/* Progress Indicator */}
           <div className="w-full mb-4">
             <QuestionnaireProgress
               currentLang={currentLang}
@@ -251,110 +205,72 @@ export const CitizenProfilePage: React.FC<CitizenProfilePageProps> = ({
               onSelectStep={(step) => setCurrentStep(step)}
             />
           </div>
-        )}
 
-        {/* =========================================================================
-            5. ACTIVE FORM PANEL OR COMPLETION CARD
-           ========================================================================= */}
-        <div className="w-full">
-          {isCompleted ? (
-            <ProfileCompletedCard
-              currentLang={currentLang}
-              formData={formData}
-              onNavigateToExplorer={onNavigateToExplorer}
-              onNavigateToDashboard={onNavigateToDashboard}
-              onRestart={handleRestart}
-            />
-          ) : (
-            <>
-              {currentStep === 1 && (
-                <PersonalInformationForm
-                  currentLang={currentLang}
-                  formData={formData}
-                  onChange={handleUpdateFormData}
-                />
-              )}
+          {/* Form Step Content */}
+          <div className="w-full">
+            {currentStep === 1 && (
+              <PersonalInformationForm
+                currentLang={currentLang}
+                formData={formData}
+                onChange={handleUpdateFormData}
+              />
+            )}
 
-              {currentStep === 2 && (
-                <EducationWorkForm
-                  currentLang={currentLang}
-                  formData={formData}
-                  onChange={handleUpdateFormData}
-                />
-              )}
+            {currentStep === 2 && (
+              <EducationWorkForm
+                currentLang={currentLang}
+                formData={formData}
+                onChange={handleUpdateFormData}
+              />
+            )}
 
-              {currentStep === 3 && (
-                <IncomeLivelihoodForm
-                  currentLang={currentLang}
-                  formData={formData}
-                  onChange={handleUpdateFormData}
-                />
-              )}
+            {currentStep === 3 && (
+              <IncomeLivelihoodForm
+                currentLang={currentLang}
+                formData={formData}
+                onChange={handleUpdateFormData}
+              />
+            )}
 
-              {currentStep === 4 && (
-                <HousingAssetsForm
-                  currentLang={currentLang}
-                  formData={formData}
-                  onChange={handleUpdateFormData}
-                />
-              )}
+            {currentStep === 4 && (
+              <HousingAssetsForm
+                currentLang={currentLang}
+                formData={formData}
+                onChange={handleUpdateFormData}
+              />
+            )}
 
-              {currentStep === 5 && (
-                <OtherDetailsForm
-                  currentLang={currentLang}
-                  formData={formData}
-                  onChange={handleUpdateFormData}
-                />
-              )}
+            {currentStep === 5 && (
+              <OtherDetailsForm
+                currentLang={currentLang}
+                formData={formData}
+                onChange={handleUpdateFormData}
+              />
+            )}
+          </div>
 
-              {/* =========================================================================
-                  6. BOTTOM NAVIGATION ACTIONS (Previous / Next)
-                 ========================================================================= */}
-              <div className="w-full grid grid-cols-2 gap-3 sm:gap-4 mt-4.5 mb-2">
-                {/* Previous Button (Outlined) */}
-                <button
-                  type="button"
-                  onClick={handlePrevious}
-                  className="w-full h-[48px] sm:h-[52px] bg-white hover:bg-[#FAF7EF] active:scale-[0.98] border-[1.5px] border-[#155B4D] rounded-[14px] text-[#155B4D] font-bold text-[15px] sm:text-[16px] flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-2xs"
-                >
-                  <ChevronLeft className="w-4.5 h-4.5 stroke-[2.4]" />
-                  <span className={isTamil ? 'font-tamil' : ''}>
-                    {t.navPrevious}
-                  </span>
-                </button>
+          {/* Step Navigation Controls (Prev / Next) */}
+          <div className="w-full mt-5 flex items-center justify-between gap-3">
+            <button
+              type="button"
+              onClick={handlePrevious}
+              className="px-4 py-2.5 rounded-[12px] border border-[#CBD5CF] bg-white hover:bg-[#FAF7EF] active:scale-95 text-[#155B4D] font-bold text-[13px] flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs"
+            >
+              <ChevronLeft className="w-4 h-4 stroke-[2.4]" />
+              <span>{isTamil ? 'முந்தையது' : 'Previous'}</span>
+            </button>
 
-                {/* Next Button (Deep Teal Solid) */}
-                <button
-                  type="button"
-                  onClick={handleNext}
-                  className="w-full h-[48px] sm:h-[52px] bg-[#155B4D] hover:bg-[#10483D] active:scale-[0.98] rounded-[14px] text-white font-bold text-[15px] sm:text-[16px] flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm"
-                >
-                  <span className={isTamil ? 'font-tamil' : ''}>
-                    {currentStep === 5 ? t.navFinish : t.navNext}
-                  </span>
-                  <ChevronRight className="w-4.5 h-4.5 stroke-[2.4]" />
-                </button>
-              </div>
-            </>
-          )}
-        </div>
-      </main>
-
-      {/* Shared Notifications Drawer */}
-      <NotificationDrawer
-        isOpen={isNotificationDrawerOpen}
-        currentLang={currentLang}
-        notifications={notifications}
-        onMarkAllRead={() =>
-          setNotifications((prev) => prev.map((n) => ({ ...n, read: true })))
-        }
-        onSelectNotification={(id) =>
-          setNotifications((prev) =>
-            prev.map((n) => (n.id === id ? { ...n, read: true } : n))
-          )
-        }
-        onClose={() => setIsNotificationDrawerOpen(false)}
-      />
+            <button
+              type="button"
+              onClick={handleNext}
+              className="flex-1 py-2.5 rounded-[12px] bg-[#155B4D] hover:bg-[#10483D] active:scale-[0.99] text-white font-bold text-[13.5px] flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs"
+            >
+              <span>{currentStep === 5 ? (isTamil ? 'விவரங்களை ஆய்வு செய் →' : 'Review Answers →') : (isTamil ? 'அடுத்தது →' : 'Next Step →')}</span>
+              <ChevronRight className="w-4 h-4 stroke-[2.4]" />
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 };

@@ -34,6 +34,7 @@ interface SchemeDetailPageProps {
   onBack?: () => void;
   onHome?: () => void;
   onOpenLanguage: () => void;
+  onCheckEligibility?: (schemeId: string) => void;
 }
 
 type TabType = 'overview' | 'eligibility' | 'documents' | 'more';
@@ -48,6 +49,7 @@ export const SchemeDetailPage: React.FC<SchemeDetailPageProps> = ({
   onBack,
   onHome,
   onOpenLanguage,
+  onCheckEligibility,
 }) => {
   const [activeTab, setActiveTab] = useState<TabType>('overview');
 
@@ -162,54 +164,7 @@ export const SchemeDetailPage: React.FC<SchemeDetailPageProps> = ({
   // Fallback for non-existent or invalid scheme ID
   if (!scheme) {
     return (
-      <div className="relative w-full max-w-[430px] mx-auto min-h-screen bg-[#FAF7EF] text-[#202820] flex flex-col justify-start overflow-x-hidden pt-[max(env(safe-area-inset-top),12px)] pb-[max(env(safe-area-inset-bottom),28px)] antialiased px-4 sm:px-5">
-        <header className="w-full pt-2 pb-3 flex items-center justify-between select-none">
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleBack}
-              type="button"
-              aria-label="Back"
-              className="w-8 h-8 rounded-full flex items-center justify-center text-[#155B4D] hover:bg-black/5 active:scale-90 transition-all -ml-1 cursor-pointer"
-            >
-              <svg className="w-5 h-5 stroke-[2.8]" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <polyline points="15 18 9 12 15 6" />
-              </svg>
-            </button>
-            <button
-              type="button"
-              onClick={handleHome}
-              className="flex items-center gap-1.5 sm:gap-2 text-left cursor-pointer hover:opacity-90 active:scale-98 transition-all"
-            >
-              <img
-                src="/assets/aistudio/emblem.png"
-                alt="Urimai Aram Emblem"
-                className="w-[26px] h-[30px] sm:w-[28px] sm:h-[32px] object-contain select-none pointer-events-none shrink-0"
-                loading="eager"
-              />
-              <div className="flex flex-col justify-center">
-                <span className="font-tamil text-[14px] sm:text-[15px] font-bold text-[#202820] leading-tight select-none">
-                  உரிமையறம்
-                </span>
-                <span className="text-[8.5px] sm:text-[9px] font-bold text-[#202820] tracking-[0.05em] leading-none uppercase mt-0.5 select-none">
-                  URIMAI ARAM
-                </span>
-                <span
-                  aria-hidden="true"
-                  className="w-7 sm:w-8 h-[1.5px] bg-[#E5A824] rounded-full mt-[2px]"
-                />
-              </div>
-            </button>
-          </div>
-          <button
-            onClick={onOpenLanguage}
-            type="button"
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-[#FAF7EF] active:scale-95 border border-[#E5E9E2] rounded-full shadow-[0_1px_4px_rgba(0,0,0,0.04)] text-[12.5px] font-semibold text-[#202820] cursor-pointer"
-          >
-            <span className="text-[12px] text-[#202820] font-medium leading-none">文A</span>
-            <span>{isTamil ? 'தமிழ்' : 'English'}</span>
-          </button>
-        </header>
-
+      <div className="relative w-full max-w-[430px] mx-auto text-[#202820] flex flex-col justify-start overflow-x-hidden antialiased px-4 sm:px-5 py-8">
         <main className="flex-1 flex flex-col items-center justify-center text-center py-16 px-4">
           <div className="w-16 h-16 rounded-2xl bg-[#E5F1E7] border border-[#D5E6D8] flex items-center justify-center text-[#155B4D] mb-4 shadow-sm">
             <Info className="w-8 h-8 stroke-[2.2]" />
@@ -217,17 +172,17 @@ export const SchemeDetailPage: React.FC<SchemeDetailPageProps> = ({
           <h2 className={`text-[19px] font-bold text-[#155B4D] mb-2 ${isTamil ? 'font-tamil' : ''}`}>
             {isTamil ? 'திட்டம் கிடைக்கவில்லை' : 'Scheme Not Found'}
           </h2>
-          <p className={`text-[14px] text-[#626A62] max-w-[280px] mb-6 leading-relaxed ${isTamil ? 'font-tamil' : ''}`}>
+          <p className={`text-[13px] text-[#626A62] max-w-[280px] mb-6 leading-relaxed ${isTamil ? 'font-tamil' : ''}`}>
             {isTamil
-              ? `கோரப்பட்ட திட்ட விவரம் (${schemeId}) கிடைக்கவில்லை. திட்டங்கள் பட்டியலில் இருந்து தேர்வு செய்யவும்.`
-              : `The requested scheme details (${schemeId}) could not be found. Please choose from the Scheme Explorer.`}
+              ? 'கோரப்பட்ட திட்ட விவரம் பதிவேட்டில் இல்லை. கிடைக்கக்கூடிய திட்டங்களை அறிய அட்டவணைக்குச் செல்லவும்.'
+              : 'The requested scheme was not found in the official registry. Please browse the full catalogue.'}
           </p>
           <button
-            type="button"
             onClick={onBackToExplorer}
-            className="px-5 py-2.5 bg-[#155B4D] hover:bg-[#114b3f] active:scale-95 text-white text-[14px] font-bold rounded-xl shadow-sm transition-all cursor-pointer"
+            type="button"
+            className="px-6 py-2.5 bg-[#155B4D] hover:bg-[#10483D] active:scale-95 text-white font-bold text-[13px] rounded-full shadow-xs transition-all cursor-pointer"
           >
-            {isTamil ? 'திட்டங்கள் பட்டியல் காண்க' : 'Explore All Schemes'}
+            {isTamil ? 'திட்டங்கள் அட்டவணைக்குச் செல்' : 'Browse Scheme Catalogue'}
           </button>
         </main>
       </div>
@@ -297,75 +252,7 @@ export const SchemeDetailPage: React.FC<SchemeDetailPageProps> = ({
     : scheme.networkDescEn || 'Citizen assistance accessible across accredited government facilitation centers.';
 
   return (
-    <div className="relative w-full max-w-[430px] mx-auto min-h-screen bg-[#FAF7EF] text-[#202820] flex flex-col justify-start overflow-x-hidden pt-[max(env(safe-area-inset-top),12px)] pb-[max(env(safe-area-inset-bottom),28px)] antialiased">
-      {/* =========================================================================
-          SECTION A: TOP BRAND HEADER
-         ========================================================================= */}
-      <header className="w-full px-4 sm:px-5 pt-2 pb-3 flex items-center justify-between select-none">
-        {/* Left: Back Arrow + Logo Lockup */}
-        <div className="flex items-center gap-2">
-          {/* Back Arrow Button */}
-          <button
-            onClick={handleBack}
-            type="button"
-            aria-label="Back"
-            className="w-8 h-8 rounded-full flex items-center justify-center text-[#155B4D] hover:bg-black/5 active:scale-90 transition-all -ml-1 cursor-pointer"
-          >
-            <svg
-              className="w-5 h-5 stroke-[2.8]"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <polyline points="15 18 9 12 15 6" />
-            </svg>
-          </button>
-
-          {/* Logo Lockup */}
-          <button
-            type="button"
-            onClick={handleHome}
-            className="flex items-center gap-1.5 sm:gap-2 text-left cursor-pointer hover:opacity-90 active:scale-98 transition-all"
-          >
-            <img
-              src="/assets/aistudio/emblem.png"
-              alt="Urimai Aram Emblem"
-              className="w-[26px] h-[30px] sm:w-[28px] sm:h-[32px] object-contain select-none pointer-events-none shrink-0"
-              loading="eager"
-            />
-            <div className="flex flex-col justify-center">
-              <span className="font-tamil text-[14px] sm:text-[15px] font-bold text-[#202820] leading-tight select-none">
-                உரிமையறம்
-              </span>
-              <span className="text-[8.5px] sm:text-[9px] font-bold text-[#202820] tracking-[0.05em] leading-none uppercase mt-0.5 select-none">
-                URIMAI ARAM
-              </span>
-              <span
-                aria-hidden="true"
-                className="w-7 sm:w-8 h-[1.5px] bg-[#E5A824] rounded-full mt-[2px]"
-              />
-            </div>
-          </button>
-        </div>
-
-        {/* Right: Language Selector Pill */}
-        <button
-          onClick={onOpenLanguage}
-          type="button"
-          aria-label="Change Language"
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-[#FAF7EF] active:scale-95 border border-[#E5E9E2] rounded-full shadow-[0_1px_4px_rgba(0,0,0,0.04)] text-[12.5px] font-semibold text-[#202820] transition-all cursor-pointer"
-        >
-          {/* Translation icon 文A */}
-          <span className="text-[12px] text-[#202820] font-medium leading-none">文A</span>
-          <span>{isTamil ? 'தமிழ்' : 'English'}</span>
-          <svg className="w-3.5 h-3.5 text-[#626A62] stroke-[2.5]" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <polyline points="6 9 12 15 18 9" />
-          </svg>
-        </button>
-      </header>
-
+    <div className="relative w-full max-w-[430px] mx-auto text-[#202820] flex flex-col justify-start overflow-x-hidden pt-2 pb-10 antialiased">
       {/* Main Screen Content */}
       <main className="w-full px-4 sm:px-5 flex flex-col justify-start">
         {/* =========================================================================
@@ -552,6 +439,32 @@ export const SchemeDetailPage: React.FC<SchemeDetailPageProps> = ({
             {schemeSummary}
           </p>
         </section>
+
+        {/* Clear "Check my eligibility" Primary Action Banner */}
+        {onCheckEligibility && (
+          <section className="mb-4 w-full">
+            <button
+              type="button"
+              onClick={() => onCheckEligibility(scheme.schemeId)}
+              className="w-full py-3.5 px-4 bg-[#155B4D] hover:bg-[#10483D] active:scale-[0.99] text-white font-bold rounded-2xl shadow-sm flex items-center justify-between transition-all cursor-pointer"
+            >
+              <div className="flex items-center gap-2.5">
+                <div className="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center text-white">
+                  <ShieldCheck className="w-4 h-4" />
+                </div>
+                <div className="text-left">
+                  <span className={`text-[13.5px] sm:text-[14.5px] block font-bold ${isTamil ? 'font-tamil' : ''}`}>
+                    {isTamil ? 'என் தகுதியை ஆய்வு செய்க' : 'Check My Eligibility'}
+                  </span>
+                  <span className="text-[10.5px] text-white/80 block">
+                    {isTamil ? 'குடும்ப விவரங்களை அடிப்படையாகக் கொண்ட மதிப்பீடு' : 'Guided verification against official scheme rules'}
+                  </span>
+                </div>
+              </div>
+              <span className="text-white text-[15px] font-bold">→</span>
+            </button>
+          </section>
+        )}
 
         {/* =========================================================================
             SECTION E: FOUR INFORMATION NAVIGATION TABS (Strict Label Containment)

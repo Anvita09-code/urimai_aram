@@ -23,6 +23,7 @@ import {
   Info,
 } from 'lucide-react';
 import { translations } from '../../data/translations';
+import { householdService } from '../../services/householdService';
 import { HouseholdMember, HouseholdProfile, Language } from '../../types';
 import { DashboardHeader } from '../Dashboard/DashboardHeader';
 import { CitizenNotification, NotificationDrawer } from '../Dashboard/modals/NotificationDrawer';
@@ -161,12 +162,10 @@ export const AccountSettingsPage: React.FC<AccountSettingsPageProps> = ({
   };
 
   const handleConfirmDeleteData = () => {
+    householdService.resetAll();
     localStorage.removeItem('urimai_aram_citizen_name');
     localStorage.removeItem('urimai_aram_citizen_role');
     localStorage.removeItem('urimai_aram_citizen_phone');
-    localStorage.removeItem('urimai_aram_household_profile');
-    localStorage.removeItem('urimai_aram_household_members');
-    localStorage.removeItem('urimai_aram_saved_schemes');
     localStorage.removeItem('urimai_aram_recent_activity');
     setIsDeleteDataDialogOpen(false);
     onNavigateHome();
@@ -615,32 +614,30 @@ export const AccountSettingsPage: React.FC<AccountSettingsPageProps> = ({
             <ChevronRight className="w-3.5 h-3.5 text-[#48544F] group-hover:text-[#C62828] stroke-[2.2] shrink-0 transition-colors" />
           </div>
 
-          {/* Row 7: Operator Assistance Portal */}
-          {onNavigateToOperator && (
-            <div
-              onClick={onNavigateToOperator}
-              className="w-full p-2 min-[360px]:p-2.5 flex items-center justify-between gap-2 min-[360px]:gap-2.5 cursor-pointer hover:bg-[#F2F8F4] rounded-[12px] transition-colors group"
-            >
-              <div className="flex items-center gap-2 min-[360px]:gap-2.5 min-w-0 flex-1">
-                <div className="w-8 h-8 min-[360px]:w-8.5 min-[360px]:h-8.5 rounded-[10px] bg-[#EAF3EA] text-[#145B49] flex items-center justify-center shrink-0">
-                  <User className="w-4 h-4 stroke-[2.2]" />
-                </div>
-                <div className="min-w-0">
-                  <span
-                    className={`font-semibold text-[#145B49] text-[11px] min-[360px]:text-[11.5px] min-[390px]:text-[12px] sm:text-[13px] truncate block ${
-                      isTamil ? 'font-tamil' : ''
-                    }`}
-                  >
-                    {isTamil ? 'ஆபரேட்டர் உதவி மையம்' : 'Operator Assistance Centre'}
-                  </span>
-                  <span className="text-[9.5px] text-[#606B66] block">
-                    {isTamil ? 'இ-சேவை & விண்ணப்ப மேலாண்மை' : 'e-Sevai & Application Management'}
-                  </span>
-                </div>
+          {/* Row 7: Previous Scheme Evaluations Shortcut */}
+          <div
+            onClick={onNavigateToApplications}
+            className="w-full p-2 min-[360px]:p-2.5 flex items-center justify-between gap-2 min-[360px]:gap-2.5 cursor-pointer hover:bg-[#FAFBF9] rounded-[12px] transition-colors group"
+          >
+            <div className="flex items-center gap-2 min-[360px]:gap-2.5 min-w-0 flex-1">
+              <div className="w-8 h-8 min-[360px]:w-8.5 min-[360px]:h-8.5 rounded-[10px] bg-[#EAF3EA] text-[#155B4D] flex items-center justify-center shrink-0">
+                <FileText className="w-4 h-4 stroke-[2.2]" />
               </div>
-              <ChevronRight className="w-3.5 h-3.5 text-[#145B49] stroke-[2.2] shrink-0 transition-colors" />
+              <div className="min-w-0">
+                <span
+                  className={`font-semibold text-[#202321] text-[11px] min-[360px]:text-[11.5px] min-[390px]:text-[12px] sm:text-[13px] truncate block ${
+                    isTamil ? 'font-tamil' : ''
+                  }`}
+                >
+                  {isTamil ? 'முந்தைய தகுதி ஆய்வுகள்' : 'My Previous Evaluations'}
+                </span>
+                <span className="text-[9.5px] text-[#606B66] block">
+                  {isTamil ? 'முடிவுகள் மற்றும் வரலாற்று ஆவணங்கள்' : 'View past assessments and outcomes'}
+                </span>
+              </div>
             </div>
-          )}
+            <ChevronRight className="w-3.5 h-3.5 text-[#48544F] group-hover:text-[#155B4D] stroke-[2.2] shrink-0 transition-colors" />
+          </div>
         </section>
 
         {/* =========================================================================

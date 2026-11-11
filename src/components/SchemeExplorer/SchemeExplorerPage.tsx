@@ -3,7 +3,6 @@ import { schemesData } from '../../data/schemes';
 import { translations } from '../../data/translations';
 import { AdminLevel, Language, SchemeCategory, SortOption } from '../../types';
 import { CategorySelector } from './CategorySelector';
-import { ExplorerHeader } from './ExplorerHeader';
 import { ExplorerHero } from './ExplorerHero';
 import { FilterSortBar } from './FilterSortBar';
 import { ResultsSummary } from './ResultsSummary';
@@ -160,14 +159,7 @@ export const SchemeExplorerPage: React.FC<SchemeExplorerPageProps> = ({
   };
 
   return (
-    <div className="relative w-full max-w-[430px] mx-auto min-h-screen bg-[#FBF7EF] flex flex-col justify-start overflow-x-hidden pt-[max(env(safe-area-inset-top),14px)] pb-[max(env(safe-area-inset-bottom),20px)]">
-      {/* SECTION A: Header */}
-      <ExplorerHeader
-        currentLang={currentLang}
-        onBack={onBackToLanding}
-        onOpenLanguage={onOpenLanguage}
-      />
-
+    <div className="relative w-full max-w-[430px] mx-auto flex flex-col justify-start overflow-x-hidden pt-2 pb-8">
       {/* SECTION B: Page Title and Introduction */}
       <ExplorerHero currentLang={currentLang} />
 
